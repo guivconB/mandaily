@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'splascreen.dart';
+// Remova as importações de Passo1 e Passo2 se a navegação
+// for totalmente gerenciada dentro das telas (como está agora)
+// import 'passos/passo1.dart';
+// import 'passos/passo2.dart';
 
 void main() {
   runApp(const MyApp());
@@ -8,19 +12,26 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'ManDaily',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const SplashScreen()
+      home: const SplashScreen(), // Define SplashScreen como a tela inicial
+      // Remova initialRoute e routes se estiver usando a navegação como no SplashScreen
+      // initialRoute: '/',
+      // routes: {
+      //   '/': (context) => const Passo1(), // SplashScreen já navega para cá
+      //   '/passo2': (context) => const Passo2(),
+      // },
     );
   }
 }
 
+// ... (Restante do código de MyHomePage, se ainda for necessário para outras partes)
+// Se MyHomePage não for mais usado, pode ser removido.
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 

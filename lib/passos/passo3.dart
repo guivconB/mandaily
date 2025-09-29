@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'passo3.dart';
+import 'passo4.dart'; // importa a próxima tela se existir
 
-class Passo2 extends StatelessWidget {
-  const Passo2({super.key});
+class Passo3 extends StatelessWidget {
+  const Passo3({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,15 +13,15 @@ class Passo2 extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'lib/assets/images/iconesaude.png',
-              width: 500, // Ajuste se necessário
-              height: 150, // Ajuste se necessário
+              'lib/assets/images/iconepilula.png', // imagem diferente se quiser
+              width: 400,
+              height: 150,
             ),
             const SizedBox(height: 20),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: Text(
-                "Anote as suas consultas médicas no ManDaily para que seja lembrado do seu compromisso com o profissional da saúde.",
+                "Os remédios que está utilizando no momento para ser alertado na frequência que você precisa consumi-los.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -32,15 +32,11 @@ class Passo2 extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             IconButton(
-              icon: const Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.white,
-                size: 40,
-              ),
+              icon: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 40),
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const Passo3()),
+                  MaterialPageRoute(builder: (context) => const Passo4()),
                 );
               },
             ),

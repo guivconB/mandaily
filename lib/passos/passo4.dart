@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'passo5.dart'; // importa a próxima tela se existir
 
 class Passo4 extends StatelessWidget {
   const Passo4({super.key});
@@ -20,7 +21,7 @@ class Passo4 extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: Text(
-                "OOOOOOO.",
+                "Criando a sua conta para ter acesso ao aplicativo e todas as suas funções.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -35,7 +36,7 @@ class Passo4 extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const Passo4()),
+                  MaterialPageRoute(builder: (context) => const Passo5()),
                 );
               },
             ),

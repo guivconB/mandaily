@@ -67,14 +67,14 @@ flutter:
       fonts:
         - asset: lib/assets/fonts/Coolvetica5.otf
 
-
-
     - family: Nexa
       fonts:
-        - asset: lib/assets/fonts/nexa/Nexa-Black.ttf
-          weight: 400
-        - asset: lib/assets/fonts/nexa/Nexa-Light.ttf
-          weight: 300
+
+        - asset: lib/assets/fonts/nexa/Nexa-Heavy.ttf
+          weight: 900
+        - asset: lib/assets/fonts/nexa/Nexa-Book.ttf
+          weight: 200
+
 
 
 

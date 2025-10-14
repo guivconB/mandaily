@@ -1,13 +1,13 @@
-import userModel from '../models/userModel.js';
+import UserModel from '../models/userModel.js';
 import bcrypt from 'bcrypt';
 
-class cadastroController {
+class userController {
   // Criar um novo cadastro
   static async novoCadastro(req, res) {
     try {
-      const { email, senha, confirmarSenha, nome, telefone, dataNascimento } = req.body;
+      const { email, senha, confirmarSenha, nome, dataNascimento } = req.body;
 
-      if (!email || !senha || !nome || !telefone || !dataNascimento) {
+      if (!email || !senha || !nome || !dataNascimento) {
         return res.status(400).json({ message: "Preencha todos os campos obrigatórios." });
       }
 
@@ -15,17 +15,16 @@ class cadastroController {
         return res.status(400).json({ message: "As senhas não coincidem." });
       }
 
-      const cadastroExistente = await userModel.findOne({ email });
+      const cadastroExistente = await UserModel.findOne({ email });
       if (cadastroExistente) {
         return res.status(400).json({ message: "E-mail já registrado." });
       }
 
       const senhaHash = await bcrypt.hash(senha, 10);
 
-      const novoUsuario = new userModel({
+      const novoUsuario = new UserModel({
         email,
         nome,
-        telefone,
         dataNascimento,
         senha: senhaHash,
       });
@@ -40,7 +39,7 @@ class cadastroController {
   // Listar todos os cadastros
   static async listarCadastros(req, res) {
     try {
-      const cadastros = await userModel.find().select("-senha");
+      const cadastros = await UserModel.find().select("-senha");
       res.status(200).json(cadastros);
     } catch (error) {
       res.status(500).json({ message: "Erro ao listar cadastros.", error: error.message });
@@ -50,7 +49,7 @@ class cadastroController {
   // Buscar um cadastro por ID
   static async buscarCadastroPorId(req, res) {
     try {
-      const cadastro = await userModel.findById(req.params.id).select("-senha");
+      const cadastro = await UserModel.findById(req.params.id).select("-senha");
       if (!cadastro) {
         return res.status(404).json({ message: "Cadastro não encontrado." });
       }
@@ -63,7 +62,7 @@ class cadastroController {
   // Buscar um cadastro por e-mail
   static async buscarCadastroPorEmail(req, res) {
     try {
-      const cadastro = await userModel.findOne({ email: req.params.email }).select("-senha");
+      const cadastro = await UserModel.findOne({ email: req.params.email }).select("-senha");
       if (!cadastro) {
         return res.status(404).json({ message: "Cadastro não encontrado." });
       }
@@ -80,7 +79,7 @@ class cadastroController {
         req.body.senha = await bcrypt.hash(req.body.senha, 10);
       }
 
-      const cadastroAtualizado = await userModel
+      const cadastroAtualizado = await UserModel
         .findByIdAndUpdate(req.params.id, req.body, { new: true })
         .select("-senha");
 
@@ -97,7 +96,7 @@ class cadastroController {
   // Deletar um cadastro por ID
   static async deletarCadastro(req, res) {
     try {
-      const cadastroDeletado = await userModel.findByIdAndDelete(req.params.id);
+      const cadastroDeletado = await UserModel.findByIdAndDelete(req.params.id);
       if (!cadastroDeletado) {
         return res.status(404).json({ message: "Cadastro não encontrado." });
       }
@@ -112,7 +111,7 @@ class cadastroController {
     try {
       const { email, senha } = req.body;
 
-      const usuario = await userModel.findOne({ email });
+      const usuario = await UserModel.findOne({ email });
       if (!usuario) {
         return res.status(401).json({ message: "E-mail ou senha incorretos." });
       }
@@ -129,4 +128,4 @@ class cadastroController {
   }
 }
 
-export default cadastroController;
+export default userController;

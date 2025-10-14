@@ -5,7 +5,7 @@ import express from 'express';
 
 import userRoutes from './routes/userRoutes.js';
 
-import conectaNaDatabase from '/config/dbConnection.js';
+import conectaNaDatabase from './config/dbConnection.js';
 await conectaNaDatabase();
 
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import ''; // importa a próxima tela se existir
+import 'passo5.dart'; // importa a próxima tela se existir
 
 class Passo4 extends StatelessWidget {
   const Passo4({super.key});
@@ -29,6 +29,16 @@ class Passo4 extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+            ),
+            const SizedBox(height: 30),
+            IconButton(
+              icon: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 40),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Passo5()),
+                );
+              },
             ),
           ],
         ),

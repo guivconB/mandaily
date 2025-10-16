@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const TelaConsulta(), // Define SplashScreen como a tela inicial
+      home: const SplashScreen(), // Define SplashScreen como a tela inicial
       // Remova initialRoute e routes se estiver usando a navegação como no SplashScreen
       // initialRoute: '/',
       // routes: {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'splascreen.dart';
+import 'home/tela_consulta.dart';
 // Remova as importações de Passo1 e Passo2 se a navegação
 // for totalmente gerenciada dentro das telas (como está agora)
 // import 'passos/passo1.dart';
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const SplashScreen(), // Define SplashScreen como a tela inicial
+      home: const TelaConsulta(), // Define SplashScreen como a tela inicial
       // Remova initialRoute e routes se estiver usando a navegação como no SplashScreen
       // initialRoute: '/',
       // routes: {

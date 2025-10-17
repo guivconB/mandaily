@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../auth/login.dart';
 import '../auth/register.dart';
 
 class Passo5 extends StatelessWidget {
@@ -67,9 +68,14 @@ class Passo5 extends StatelessWidget {
 
               ),
             ),
-            const SizedBox(height: 20),//espaçamento
+            const SizedBox(height: 20),
+            //espaçamento
             ElevatedButton( //Entrar
               onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Login()),
+                );
                 //Ação botão
               },
               style: ElevatedButton.styleFrom(

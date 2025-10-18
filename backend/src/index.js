@@ -3,7 +3,9 @@ dotenv.config();
 
 import express from 'express';
 
+
 import userRoutes from './routes/userRoutes.js';
+import medicationRoutes from './routes/medicationRoutes.js';
 
 import conectaNaDatabase from './config/dbConnection.js';
 await conectaNaDatabase();
@@ -12,8 +14,10 @@ await conectaNaDatabase();
 const app = express();
 const port = process.env.PORT || 3000;
 
+
 app.use(express.json());
 app.use(userRoutes);
+app.use('/medicamentos', medicationRoutes);
 
 app.get('/', (req, res) => {
     res.status(200).json({ msg: "Bem-vindo" });

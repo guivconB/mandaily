@@ -1,6 +1,36 @@
 import UserModel from '../models/userModel.js';
 import bcrypt from 'bcrypt';
 
+export const novoCadastro = async (req, res) => {
+  const { nome, dataNascimento, email, senha, confirmarSenha, telefone } = req.body;
+  if (!nome || !dataNascimento || !email || !senha || !confirmarSenha) {
+    return res.status(400).json({ message: 'Campos obrigatórios ausentes.' });
+  }
+  if (senha !== confirmarSenha) {
+    return res.status(400).json({ message: 'As senhas não coincidem.' });
+  }
+
+  try {
+    const existente = await Informacoes.findOne({ email });
+    if (existente) return res.status(409).json({ message: 'Email já cadastrado.' });
+
+    const hashed = await bcrypt.hash(senha, 10);
+    const usuario = new Informacoes({
+      nome,
+      dataNascimento,
+      email,
+      senha: hashed,
+      telefone
+    });
+
+    await usuario.save();
+    return res.status(201).json({ message: 'Usuário cadastrado com sucesso.' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Erro interno do servidor.' });
+  }
+};
+
 class userController {
   // Criar um novo cadastro
   static async novoCadastro(req, res) {

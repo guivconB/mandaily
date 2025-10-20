@@ -1,44 +1,58 @@
 import 'package:flutter/material.dart';
-import 'passo5.dart'; // importa a próxima tela se existir
+import 'passo3.dart';
+import 'passo5.dart';
 
 class Passo4 extends StatelessWidget {
   const Passo4({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1E1E1E),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('lib/assets/images/fundopasso4.jpg'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack( // Adicione o Stack aqui
           children: [
-            Image.asset(
-              'lib/assets/images/iconepessoa.png', // imagem diferente se quiser
-              width: 400,
-              height: 150,
+            Center(
             ),
-            const SizedBox(height: 20),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
-              child: Text(
-                "Criando a sua conta para ter acesso ao aplicativo e todas as suas funções.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+            // Botão Voltar
+            Positioned(
+              left: 20,
+              bottom: 20,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Passo3()),
+                  );
+                },
+                child: Image.asset(
+                  'lib/assets/images/voltar.png',
+                  width: 100, // ajuste o tamanho se necessário
                 ),
               ),
             ),
-            const SizedBox(height: 30),
-            IconButton(
-              icon: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 40),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Passo5()),
-                );
-              },
+            // Botão Avançar
+            Positioned(
+              right: 20,
+              bottom: 20,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Passo5()),
+                  );
+                },
+                child: Image.asset(
+                  'lib/assets/images/avancar.png',
+                  width: 100, // ajuste o tamanho se necessário
+                ),
+              ),
             ),
           ],
         ),

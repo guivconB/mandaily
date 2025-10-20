@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mandaily/auth/register.dart';
-import 'package:mandaily/splascreen.dart';
+import 'package:mandaily/home/tela_consulta.dart';
 import '../passos/passo5.dart';
 
 class Login extends StatefulWidget {
@@ -145,7 +145,7 @@ class _LoginState extends State<Login> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const SplashScreen()),
+                      MaterialPageRoute(builder: (context) =>  TelaConsulta()),
                     );
                   },
                   style: ElevatedButton.styleFrom(

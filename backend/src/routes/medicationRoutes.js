@@ -3,8 +3,8 @@ import { createMedication, getAllMedications, getMedicationById, updateMedicatio
 
 const router = express.Router();
 
-router.post('/medicamento', createMedication);
-router.get('/medicamento', getAllMedications);
+router.post('/novoMedicamento', createMedication);
+router.get('/medicament', getAllMedications);
 router.get('/medicamento/:id', getMedicationById);
 router.put('/medicamento/:id', updateMedication);
 router.delete('/medicamento/:id', deleteMedication);

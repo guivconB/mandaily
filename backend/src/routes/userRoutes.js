@@ -19,28 +19,7 @@ router.delete('/dados/:id', userController.deletarCadastro);
 //login
 router.post('/login', userController.login);
 
-export default router;
 
-const router = express.Router();
-
-router.post('/dados', novoCadastro);
 
 export default router;
 
-// File: `backend/src/app.js`
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import conectaNaDatabase from './config/dbConnection.js';
-import userRoutes from './routes/userRoutes.js';
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-conectaNaDatabase();
-
-app.use('/', userRoutes);
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server rodando na porta ${PORT}`));

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:mandaily/home/remedios/tela_remedio.dart';
+import 'package:mandaily/home/tela_consulta.dart';
 
-class TelaConsulta extends StatefulWidget {
-  const TelaConsulta({super.key});
+class TelaRemedio extends StatefulWidget {
+  const TelaRemedio({super.key});
 
   @override
-  State<TelaConsulta> createState() => _TelaConsultaState();
+  State<TelaRemedio> createState() => _TelaRemedioState();
 }
 
-class _TelaConsultaState extends State<TelaConsulta> {
+class _TelaRemedioState extends State<TelaRemedio> {
   late DateTime _selectedDate;
   final List<DateTime> _diasDoMes = [];
 
@@ -34,7 +34,7 @@ class _TelaConsultaState extends State<TelaConsulta> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('lib/assets/images/fundo_consulta.jpg'),
+            image: AssetImage('lib/assets/images/fundo_remedio.jpg'),
             fit: BoxFit.cover,
           ),
         ),
@@ -100,7 +100,7 @@ class _TelaConsultaState extends State<TelaConsulta> {
                           width: 55,
                           margin: const EdgeInsets.symmetric(horizontal: 6),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF007AFF) : Colors.black.withOpacity(0.2),
+                            color: isSelected ? const Color(0xFF55CE98) : Colors.black.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: Colors.white.withOpacity(0.1),
@@ -168,7 +168,10 @@ class _TelaConsultaState extends State<TelaConsulta> {
                 // **IMPORTANTE**: Coloque o caminho correto da sua imagem aqui!
                 icon: Image.asset('lib/assets/images/iconesaude.png', width: 30, height: 30),
                 onPressed: () {
-                  print('Botão da esquerda pressionado!');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const TelaConsulta()),
+                  );
                 },
               ),
               // --- BOTÃO DA DIREITA (MODIFICADO) ---
@@ -177,11 +180,7 @@ class _TelaConsultaState extends State<TelaConsulta> {
                 // **IMPORTANTE**: Coloque o caminho correto da sua imagem aqui!
                 icon: Image.asset('lib/assets/images/iconpilula.png', width: 30, height: 30),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const TelaRemedio()),
-                  );
-
+                  print('Botão da direita pressionado!');
                 },
               ),
             ],

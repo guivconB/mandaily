@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:mandaily/home/remedios/adicionar_remedio.dart';
 import 'package:mandaily/home/remedios/tela_remedio.dart';
 
 class TelaConsulta extends StatefulWidget {
@@ -137,8 +138,12 @@ class _TelaConsultaState extends State<TelaConsulta> {
       // 1. O Botão de Ação Flutuante Principal (o do meio)
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          print('Botão central (+) pressionado!');
+         Navigator.push(
+             context,
+             MaterialPageRoute(builder: (context) => AdicionarRemedio()),
+         );
         },
+
         backgroundColor: const Color(0xFF48484A), // Cinza escuro, como na imagem
         elevation: 4.0, // Uma pequena sombra para dar profundidade
         shape: const CircleBorder(), // Garante que ele seja perfeitamente redondo

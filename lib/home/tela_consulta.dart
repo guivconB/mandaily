@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mandaily/home/remedios/adicionar_remedio.dart';
 import 'package:mandaily/home/remedios/tela_remedio.dart';
+import 'package:mandaily/calendar_screen.dart'; // 1. Importe a nova tela
 
 class TelaConsulta extends StatefulWidget {
   const TelaConsulta({super.key});
@@ -52,7 +53,13 @@ class _TelaConsultaState extends State<TelaConsulta> {
                   children: [
                     IconButton(
                       icon: Image.asset('lib/assets/images/iconcalendar.png', width: 28, height: 28),
-                      onPressed: () => print('Botão de Calendário pressionado!'),
+                      // 2. Modifique o onPressed para navegar
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const CalendarScreen()),
+                        );
+                      },
                     ),
                     IconButton(
                       icon: Image.asset('lib/assets/images/icon3barras.png', width: 28, height: 28),
@@ -138,10 +145,10 @@ class _TelaConsultaState extends State<TelaConsulta> {
       // 1. O Botão de Ação Flutuante Principal (o do meio)
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-         Navigator.push(
-             context,
-             MaterialPageRoute(builder: (context) => AdicionarRemedio()),
-         );
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AdicionarRemedio()),
+          );
         },
 
         backgroundColor: const Color(0xFF48484A), // Cinza escuro, como na imagem

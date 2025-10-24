@@ -5,14 +5,16 @@
 
 'use strict';
 
-const MongooseError = require('./');
+const MongooseError = require('./mongooseError');
+
+/**
+ * DivergentArrayError constructor.
+ * @param {Array<String>} paths
+ * @api private
+ */
 
 class DivergentArrayError extends MongooseError {
-  /**
-   * DivergentArrayError constructor.
-   * @param {Array<String>} paths
-   * @api private
-   */
+
   constructor(paths) {
     const msg = 'For your own good, using `document.save()` to update an array '
             + 'which was selected using an $elemMatch projection OR '

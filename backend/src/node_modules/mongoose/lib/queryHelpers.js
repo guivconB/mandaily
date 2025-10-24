@@ -4,6 +4,7 @@
  * Module dependencies
  */
 
+const PopulateOptions = require('./options/populateOptions');
 const checkEmbeddedDiscriminatorKeyProjection =
   require('./helpers/discriminator/checkEmbeddedDiscriminatorKeyProjection');
 const get = require('./helpers/get');
@@ -12,32 +13,6 @@ const getDiscriminatorByValue =
 const isDefiningProjection = require('./helpers/projection/isDefiningProjection');
 const clone = require('./helpers/clone');
 const isPathSelectedInclusive = require('./helpers/projection/isPathSelectedInclusive');
-
-/**
- * Prepare a set of path options for query population.
- *
- * @param {Query} query
- * @param {Object} options
- * @return {Array}
- */
-
-exports.preparePopulationOptions = function preparePopulationOptions(query, options) {
-  const _populate = query.options.populate;
-  const pop = Object.keys(_populate).reduce((vals, key) => vals.concat([_populate[key]]), []);
-
-  // lean options should trickle through all queries
-  if (options.lean != null) {
-    pop
-      .filter(p => (p && p.options && p.options.lean) == null)
-      .forEach(makeLean(options.lean));
-  }
-
-  pop.forEach(opts => {
-    opts._localModel = query.model;
-  });
-
-  return pop;
-};
 
 /**
  * Prepare a set of path options for query population. This is the MongooseQuery
@@ -73,12 +48,18 @@ exports.preparePopulationOptionsMQ = function preparePopulationOptionsMQ(query, 
   }
 
   const projection = query._fieldsForExec();
-  pop.forEach(p => {
-    p._queryProjection = projection;
-  });
-  pop.forEach(opts => {
-    opts._localModel = query.model;
-  });
+  for (let i = 0; i < pop.length; ++i) {
+    if (pop[i] instanceof PopulateOptions) {
+      pop[i] = new PopulateOptions({
+        ...pop[i],
+        _queryProjection: projection,
+        _localModel: query.model
+      });
+    } else {
+      pop[i]._queryProjection = projection;
+      pop[i]._localModel = query.model;
+    }
+  }
 
   return pop;
 };
@@ -145,7 +126,7 @@ exports.createModelAndInit = function createModelAndInit(model, doc, fields, use
  * ignore
  */
 
-exports.applyPaths = function applyPaths(fields, schema) {
+exports.applyPaths = function applyPaths(fields, schema, sanitizeProjection) {
   // determine if query is selecting or excluding fields
   let exclude;
   let keys;
@@ -321,6 +302,10 @@ exports.applyPaths = function applyPaths(fields, schema) {
 
     // User overwriting default exclusion
     if (type.selected === false && fields[path]) {
+      if (sanitizeProjection) {
+        fields[path] = 0;
+      }
+
       return;
     }
 
@@ -345,8 +330,10 @@ exports.applyPaths = function applyPaths(fields, schema) {
 
       // if there are other fields being included, add this one
       // if no other included fields, leave this out (implied inclusion)
-      if (exclude === false && keys.length > 1 && !~keys.indexOf(path)) {
+      if (exclude === false && keys.length > 1 && !~keys.indexOf(path) && !sanitizeProjection) {
         fields[path] = 1;
+      } else if (exclude == null && sanitizeProjection && type.selected === false) {
+        fields[path] = 0;
       }
 
       return;

@@ -4,17 +4,18 @@
 
 'use strict';
 
-const MongooseError = require('./');
+const MongooseError = require('./mongooseError');
 
+/**
+ * Schema validator error
+ *
+ * @param {Object} properties
+ * @param {Document} doc
+ * @api private
+ */
 
 class ValidatorError extends MongooseError {
-  /**
-   * Schema validator error
-   *
-   * @param {Object} properties
-   * @param {Document} doc
-   * @api private
-   */
+
   constructor(properties, doc) {
     let msg = properties.message;
     if (!msg) {

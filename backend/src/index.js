@@ -8,6 +8,7 @@ import express from 'express';
 import userRoutes from './routes/userRoutes.js';
 import medicationRoutes from './routes/medicationRoutes.js';
 import consultaRoutes from './routes/consultaRoutes.js';
+import scheduleRoutes from './routes/scheduleRoutes.js';
 
 import conectaNaDatabase from './config/dbConnection.js';
 await conectaNaDatabase();
@@ -20,8 +21,9 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(userRoutes);
+app.use(scheduleRoutes);
 app.use('/medicamentos', medicationRoutes);
-app.use('/consultas', consultaRoutes);
+app.use(consultaRoutes);
 
 app.get('/', (req, res) => {
     res.status(200).json({ msg: "Bem-vindo" });

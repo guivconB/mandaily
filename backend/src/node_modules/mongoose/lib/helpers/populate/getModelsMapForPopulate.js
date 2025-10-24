@@ -54,6 +54,13 @@ module.exports = function getModelsMapForPopulate(model, docs, options) {
     doc = docs[i];
     let justOne = null;
 
+    if (doc.$__ != null && doc.populated(options.path)) {
+      const forceRepopulate = options.forceRepopulate != null ? options.forceRepopulate : doc.constructor.base.options.forceRepopulate;
+      if (forceRepopulate === false) {
+        continue;
+      }
+    }
+
     const docSchema = doc != null && doc.$__ != null ? doc.$__schema : modelSchema;
     schema = getSchemaTypes(model, docSchema, doc, options.path);
 
@@ -184,6 +191,7 @@ module.exports = function getModelsMapForPopulate(model, docs, options) {
     if (hasMatchFunction) {
       match = match.call(doc, doc);
     }
+    throwOn$where(match);
     data.match = match;
     data.hasMatchFunction = hasMatchFunction;
     data.isRefPath = isRefPath;
@@ -410,26 +418,12 @@ function _virtualPopulate(model, docs, options, _virtualRes) {
       justOne = options.justOne;
     }
 
+    modelNames = virtual._getModelNamesForPopulate(doc);
     if (virtual.options.refPath) {
-      modelNames =
-        modelNamesFromRefPath(virtual.options.refPath, doc, options.path);
       justOne = !!virtual.options.justOne;
       data.isRefPath = true;
     } else if (virtual.options.ref) {
-      let normalizedRef;
-      if (typeof virtual.options.ref === 'function' && !virtual.options.ref[modelSymbol]) {
-        normalizedRef = virtual.options.ref.call(doc, doc);
-      } else {
-        normalizedRef = virtual.options.ref;
-      }
       justOne = !!virtual.options.justOne;
-      // When referencing nested arrays, the ref should be an Array
-      // of modelNames.
-      if (Array.isArray(normalizedRef)) {
-        modelNames = normalizedRef;
-      } else {
-        modelNames = [normalizedRef];
-      }
     }
 
     data.isVirtual = true;
@@ -460,6 +454,8 @@ function _virtualPopulate(model, docs, options, _virtualRes) {
     data.foreignField = foreignField;
     data.match = match;
     data.hasMatchFunction = hasMatchFunction;
+
+    throwOn$where(match);
 
     // Get local fields
     const ret = _getLocalFieldValues(doc, localField, model, options, virtual);
@@ -492,9 +488,10 @@ function addModelNamesToMap(model, map, available, modelNames, options, data, re
     return;
   }
 
-  let k = modelNames.length;
+  const flatModelNames = utils.array.flatten(modelNames);
+  let k = flatModelNames.length;
   while (k--) {
-    const modelName = modelNames[k];
+    let modelName = flatModelNames[k];
     if (modelName == null) {
       continue;
     }
@@ -504,6 +501,7 @@ function addModelNamesToMap(model, map, available, modelNames, options, data, re
       Model = options.model;
     } else if (modelName[modelSymbol]) {
       Model = modelName;
+      modelName = Model.modelName;
     } else {
       try {
         Model = _getModelFromConn(connection, modelName);
@@ -516,11 +514,10 @@ function addModelNamesToMap(model, map, available, modelNames, options, data, re
     }
 
     let ids = ret;
-    const flat = Array.isArray(ret) ? utils.array.flatten(ret) : [];
 
     const modelNamesForRefPath = data.modelNamesInOrder ? data.modelNamesInOrder : modelNames;
-    if (data.isRefPath && Array.isArray(ret) && flat.length === modelNamesForRefPath.length) {
-      ids = flat.filter((val, i) => modelNamesForRefPath[i] === modelName);
+    if (data.isRefPath && Array.isArray(ret) && ret.length === modelNamesForRefPath.length) {
+      ids = matchIdsToRefPaths(ret, modelNamesForRefPath, modelName);
     }
 
     const perDocumentLimit = options.perDocumentLimit == null ?
@@ -582,6 +579,20 @@ function _getModelFromConn(conn, modelName) {
   return conn.model(modelName);
 }
 
+function matchIdsToRefPaths(ids, refPaths, refPathToFind) {
+  if (!Array.isArray(refPaths)) {
+    return refPaths === refPathToFind
+      ? Array.isArray(ids)
+        ? utils.array.flatten(ids)
+        : [ids]
+      : [];
+  }
+  if (Array.isArray(ids) && Array.isArray(refPaths)) {
+    return ids.flatMap((id, index) => matchIdsToRefPaths(id, refPaths[index], refPathToFind));
+  }
+  return [];
+}
+
 /*!
  * ignore
  */
@@ -639,7 +650,7 @@ function _getLocalFieldValues(doc, localField, model, options, virtual, schema) 
 
 function convertTo_id(val, schema) {
   if (val != null && val.$__ != null) {
-    return val._id;
+    return val._doc._id;
   }
   if (val != null && val._id != null && (schema == null || !schema.$isSchemaMap)) {
     return val._id;
@@ -649,7 +660,7 @@ function convertTo_id(val, schema) {
     const rawVal = val.__array != null ? val.__array : val;
     for (let i = 0; i < rawVal.length; ++i) {
       if (rawVal[i] != null && rawVal[i].$__ != null) {
-        rawVal[i] = rawVal[i]._id;
+        rawVal[i] = rawVal[i]._doc._id;
       }
     }
     if (utils.isMongooseArray(val) && val.$schema()) {
@@ -731,4 +742,25 @@ function _findRefPathForDiscriminators(doc, modelSchema, data, options, normaliz
   }
 
   return modelNames;
+}
+
+/**
+ * Throw an error if there are any $where keys
+ */
+
+function throwOn$where(match) {
+  if (match == null) {
+    return;
+  }
+  if (typeof match !== 'object') {
+    return;
+  }
+  for (const key of Object.keys(match)) {
+    if (key === '$where') {
+      throw new MongooseError('Cannot use $where filter with populate() match');
+    }
+    if (match[key] != null && typeof match[key] === 'object') {
+      throwOn$where(match[key]);
+    }
+  }
 }

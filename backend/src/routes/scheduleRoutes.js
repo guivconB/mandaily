@@ -1,16 +1,9 @@
 import express from 'express';
-import scheduleController, { listarAgendamentos, listarAgendamentosConsulta, listarAgendamentosMedicacao, novoAgendamento } from '../Controllers/scheduleController'
+import { criarAgendamento } from '../Controllers/scheduleController.js';
 
 const router = express.Router();
 
-router.post('/novoAgendamento', scheduleController.novoAgendamento);
-router.get('/agendamentos', scheduleController.listarAgendamentos);
-router.get('/consultas', listarAgendamentosConsulta );
-router.get('/medicacao', listarAgendamentosMedicacao );
-router.put('/', );
-router.delete('/', );
+router.post('/agendamento', criarAgendamento);
 
-///// Por ID
-router.get('/', );
 
 export default router;

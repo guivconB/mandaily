@@ -4,7 +4,7 @@ import { novoCadastro, listarCadastros, buscarCadastroPorEmail, buscarCadastroPo
 const router = express.Router();
 
 //listar todos os cadastros
-router.get('/user', listarCadastros);
+router.get('/users', listarCadastros);
 //buscar cadastro por email
 router.get('user/:email', buscarCadastroPorEmail);
 // buscar cadastro por ID

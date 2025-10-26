@@ -1,12 +1,12 @@
 import express from 'express';
-import { createMedication, getAllMedications, getMedicationById, updateMedication, deleteMedication } from '../Controllers/medicationController.js';
+import { novoMedicamento, listarMedicamentos, listarMedicamentosPorId, atualizarMedicamento, deletarMedicamento } from '../Controllers/medicationController.js';
 
 const router = express.Router();
 
-router.post('/medicamento', createMedication);
-router.get('/medicamento', getAllMedications);
-router.get('/medicamento/:id', getMedicationById);
-router.put('/medicamento/:id', updateMedication);
-router.delete('/medicamento/:id', deleteMedication);
+router.post('/medicamento', novoMedicamento);
+router.get('/medicamentos', listarMedicamentos);
+router.get('/medicamento/:id', listarMedicamentosPorId);
+router.put('/medicamento/:id', atualizarMedicamento);
+router.delete('/medicamento/:id', deletarMedicamento);
 
 export default router;

@@ -1,23 +1,21 @@
 import express from 'express';
-import userController from '../Controllers/userController.js';
-import { novoCadastro } from '../controllers/userController.js';
+import { novoCadastro, listarCadastros, buscarCadastroPorEmail, buscarCadastroPorId, atualizarCadastro, deletarCadastro } from '../Controllers/userController.js';
 
 const router = express.Router();
 
 //listar todos os cadastros
-router.get('/dados', userController.listarCadastros);
+router.get('/users', listarCadastros);
 //buscar cadastro por email
-router.get('/dados/email/:email', userController.buscarCadastroPorEmail);
+router.get('user/:email', buscarCadastroPorEmail);
 // buscar cadastro por ID
-router.get('/dados/:id', userController.buscarCadastroPorId);
+router.get('/user/:id', buscarCadastroPorId);
 //criar novo cadastro
-router.post('/dados', userController.novoCadastro);
+router.post('/user', novoCadastro);
 //atualizar cadastro por ID
-router.put('/dados/:id', userController.atualizarCadastro);
+router.put('/user/:id', atualizarCadastro);
 //deletar cadastro por ID
-router.delete('/dados/:id', userController.deletarCadastro);
+router.delete('/user/:id', deletarCadastro);
 //login
-router.post('/login', userController.login);
 
 
 

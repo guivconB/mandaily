@@ -1,58 +1,24 @@
-import UserModel from '../models/userModel.js';
+import User from '../models/userModel.js';
 import bcrypt from 'bcrypt';
 
-export const novoCadastro = async (req, res) => {
-  const { nome, dataNascimento, email, senha, confirmarSenha, telefone } = req.body;
-  if (!nome || !dataNascimento || !email || !senha || !confirmarSenha) {
-    return res.status(400).json({ message: 'Campos obrigatórios ausentes.' });
-  }
-  if (senha !== confirmarSenha) {
-    return res.status(400).json({ message: 'As senhas não coincidem.' });
-  }
 
-  try {
-    const existente = await Informacoes.findOne({ email });
-    if (existente) return res.status(409).json({ message: 'Email já cadastrado.' });
-
-    const hashed = await bcrypt.hash(senha, 10);
-    const usuario = new Informacoes({
-      nome,
-      dataNascimento,
-      email,
-      senha: hashed,
-      telefone
-    });
-
-    await usuario.save();
-    return res.status(201).json({ message: 'Usuário cadastrado com sucesso.' });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Erro interno do servidor.' });
-  }
-};
-
-class userController {
   // Criar um novo cadastro
-  static async novoCadastro(req, res) {
+  export const novoCadastro = async (req, res) => {
     try {
-      const { email, senha, confirmarSenha, nome, dataNascimento } = req.body;
+      const { email, senha, nome, dataNascimento } = req.body;
 
       if (!email || !senha || !nome || !dataNascimento) {
         return res.status(400).json({ message: "Preencha todos os campos obrigatórios." });
       }
 
-      if (senha !== confirmarSenha) {
-        return res.status(400).json({ message: "As senhas não coincidem." });
-      }
-
-      const cadastroExistente = await UserModel.findOne({ email });
+      const cadastroExistente = await User.findOne({ email });
       if (cadastroExistente) {
         return res.status(400).json({ message: "E-mail já registrado." });
       }
 
       const senhaHash = await bcrypt.hash(senha, 10);
 
-      const novoUsuario = new UserModel({
+      const novoUsuario = new User({
         email,
         nome,
         dataNascimento,
@@ -67,9 +33,9 @@ class userController {
   }
 
   // Listar todos os cadastros
-  static async listarCadastros(req, res) {
+  export const listarCadastros = async (req, res) => {
     try {
-      const cadastros = await UserModel.find().select("-senha");
+      const cadastros = await User.find().select("-senha");
       res.status(200).json(cadastros);
     } catch (error) {
       res.status(500).json({ message: "Erro ao listar cadastros.", error: error.message });
@@ -77,9 +43,9 @@ class userController {
   }
 
   // Buscar um cadastro por ID
-  static async buscarCadastroPorId(req, res) {
+  export const buscarCadastroPorId = async (req, res) => {
     try {
-      const cadastro = await UserModel.findById(req.params.id).select("-senha");
+      const cadastro = await User.findById(req.params.id).select("-senha");
       if (!cadastro) {
         return res.status(404).json({ message: "Cadastro não encontrado." });
       }
@@ -90,9 +56,9 @@ class userController {
   }
 
   // Buscar um cadastro por e-mail
-  static async buscarCadastroPorEmail(req, res) {
+  export const buscarCadastroPorEmail = async (req, res) => {
     try {
-      const cadastro = await UserModel.findOne({ email: req.params.email }).select("-senha");
+      const cadastro = await User.findOne({ email: req.params.email }).select("-senha");
       if (!cadastro) {
         return res.status(404).json({ message: "Cadastro não encontrado." });
       }
@@ -103,13 +69,13 @@ class userController {
   }
 
   // Atualizar um cadastro por ID
-  static async atualizarCadastro(req, res) {
+ export const atualizarCadastro = async (req, res) => {
     try {
       if (req.body.senha) {
         req.body.senha = await bcrypt.hash(req.body.senha, 10);
       }
 
-      const cadastroAtualizado = await UserModel
+      const cadastroAtualizado = await User
         .findByIdAndUpdate(req.params.id, req.body, { new: true })
         .select("-senha");
 
@@ -124,9 +90,9 @@ class userController {
   }
 
   // Deletar um cadastro por ID
-  static async deletarCadastro(req, res) {
+  export const deletarCadastro = async (req, res) => {
     try {
-      const cadastroDeletado = await UserModel.findByIdAndDelete(req.params.id);
+      const cadastroDeletado = await User.findByIdAndDelete(req.params.id);
       if (!cadastroDeletado) {
         return res.status(404).json({ message: "Cadastro não encontrado." });
       }
@@ -137,11 +103,11 @@ class userController {
   }
 
   // Login de usuário
-  static async login(req, res) {
+   export const login = async (req, res) => {
     try {
       const { email, senha } = req.body;
 
-      const usuario = await UserModel.findOne({ email });
+      const usuario = await User.findOne({ email });
       if (!usuario) {
         return res.status(401).json({ message: "E-mail ou senha incorretos." });
       }
@@ -156,6 +122,5 @@ class userController {
       res.status(500).json({ message: "Erro ao realizar login.", error: error.message });
     }
   }
-}
 
-export default userController;
+

@@ -22,7 +22,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(userRoutes);
 app.use(scheduleRoutes);
-app.use('/medicamentos', medicationRoutes);
+app.use(medicationRoutes);
 app.use(consultaRoutes);
 
 app.get('/', (req, res) => {

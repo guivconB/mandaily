@@ -14,9 +14,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
-  // 📅 Mapa de eventos armazenados
-  Map<DateTime, List<String>> _events = {};
-
   // Função para normalizar data (sem horas)
   DateTime _normalizeDate(DateTime date) =>
       DateTime(date.year, date.month, date.day);
@@ -24,13 +21,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   void initState() {
     super.initState();
-
-    // Exemplo de eventos (dados iniciais)
-    _events = {
-      _normalizeDate(DateTime(2025, 10, 23)): ['Exame de sangue'],
-      _normalizeDate(DateTime(2025, 10, 25)): ['Tomar remédio 08:00'],
-      _normalizeDate(DateTime(2025, 11, 3)): ['Consulta médica'],
-    };
   }
 
   @override
@@ -98,23 +88,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
           lastDay: DateTime.utc(2030, 12, 31),
           focusedDay: date,
           selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-          eventLoader: (day) => _events[_normalizeDate(day)] ?? [],
           onDaySelected: (selectedDay, focusedDay) {
             setState(() {
               _selectedDay = selectedDay;
               _focusedDay = focusedDay;
             });
-
-            final events = _events[_normalizeDate(selectedDay)] ?? [];
-            if (events.isNotEmpty) {
-              _showEventDialog(context, selectedDay, events);
-            } else {
-              // ⭐⭐⭐ FUNÇÃO DE ADICIONAR NOVO EVENTO ⭐⭐⭐
-              _showAddEventDialog(context, selectedDay);
-            }
           },
           availableGestures: AvailableGestures.none,
-
           calendarFormat: CalendarFormat.month,
           headerVisible: false,
           daysOfWeekStyle: DaysOfWeekStyle(
@@ -130,6 +110,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
             selectedDecoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
+            ),
+            selectedTextStyle: GoogleFonts.poppins(
+              color: Colors.black, //numeros pretos
             ),
             markerDecoration: const BoxDecoration(
               color: Colors.lightBlueAccent,
@@ -148,90 +131,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  // 📅 Modal que mostra eventos existentes
-  void _showEventDialog(BuildContext context, DateTime day, List<String> events) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: Text(
-          'Eventos de ${DateFormat('d/MM/yyyy').format(day)}',
-          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: events
-              .map((e) => ListTile(
-            title: Text(e, style: GoogleFonts.poppins(color: Colors.white)),
-            leading: const Icon(Icons.event, color: Colors.white70),
-          ))
-              .toList(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // ⭐⭐ CHAMA O MESMO MÉTODO DE ADIÇÃO DE EVENTO ⭐⭐
-              _showAddEventDialog(context, day);
-            },
-            child: const Text('Adicionar', style: TextStyle(color: Colors.blueAccent)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Fechar', style: TextStyle(color: Colors.white70)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ⭐⭐⭐ FUNÇÃO PRINCIPAL DE ADICIONAR EVENTOS ⭐⭐⭐
-  void _showAddEventDialog(BuildContext context, DateTime day) {
-    final controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: Text(
-          'Adicionar evento em ${DateFormat('d/MM/yyyy').format(day)}',
-          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: TextField(
-          controller: controller,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
-            hintText: 'Digite o evento...',
-            hintStyle: TextStyle(color: Colors.white54),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.white30),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              // 👉 Lógica que realmente salva o evento
-              if (controller.text.isNotEmpty) {
-                setState(() {
-                  final normalized = _normalizeDate(day);
-                  _events.putIfAbsent(normalized, () => []);
-                  _events[normalized]!.add(controller.text);
-                });
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('Salvar', style: TextStyle(color: Colors.blueAccent)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar', style: TextStyle(color: Colors.white70)),
-          ),
-        ],
-      ),
     );
   }
 }

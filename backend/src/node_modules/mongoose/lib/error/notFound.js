@@ -4,14 +4,16 @@
  * Module dependencies.
  */
 
-const MongooseError = require('./');
+const MongooseError = require('./mongooseError');
 const util = require('util');
 
+/**
+ * OverwriteModel Error constructor.
+ * @api private
+ */
+
 class DocumentNotFoundError extends MongooseError {
-  /**
-   * OverwriteModel Error constructor.
-   * @api private
-   */
+
   constructor(filter, model, numAffected, result) {
     let msg;
     const messages = MongooseError.messages;

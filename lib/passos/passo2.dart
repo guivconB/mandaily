@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'passo1.dart';
 import 'passo3.dart';
 
 class Passo2 extends StatelessWidget {
@@ -6,43 +7,52 @@ class Passo2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1E1E1E),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('lib/assets/images/fundopasso2.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack( // Adicione o Stack aqui
           children: [
-            Image.asset(
-              'lib/assets/images/iconesaude.png',
-              width: 500, // Ajuste se necessário
-              height: 150, // Ajuste se necessário
+            Center(
             ),
-            const SizedBox(height: 20),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
-              child: Text(
-                "Anote as suas consultas médicas no ManDaily para que seja lembrado do seu compromisso com o profissional da saúde.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+            // Botão Voltar
+            Positioned(
+              left: 20,
+              bottom: 20,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Passo1()),
+                  );
+                },
+                child: Image.asset(
+                  'lib/assets/images/voltar.png',
+                  width: 100, // ajuste o tamanho se necessário
                 ),
               ),
             ),
-            const SizedBox(height: 30),
-            IconButton(
-              icon: const Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.white,
-                size: 40,
+            // Botão Avançar
+            Positioned(
+              right: 20,
+              bottom: 20,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Passo3()),
+                  );
+                },
+                child: Image.asset(
+                  'lib/assets/images/avancar.png',
+                  width: 100, // ajuste o tamanho se necessário
+                ),
               ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Passo3()),
-                );
-              },
             ),
           ],
         ),

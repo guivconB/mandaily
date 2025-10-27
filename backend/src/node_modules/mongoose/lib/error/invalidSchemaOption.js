@@ -5,14 +5,16 @@
 
 'use strict';
 
-const MongooseError = require('./');
+const MongooseError = require('./mongooseError');
+
+/**
+ * InvalidSchemaOption Error constructor.
+ * @param {String} name
+ * @api private
+ */
 
 class InvalidSchemaOptionError extends MongooseError {
-  /**
-   * InvalidSchemaOption Error constructor.
-   * @param {String} name
-   * @api private
-   */
+
   constructor(name, option) {
     const msg = `Cannot create use schema for property "${name}" because the schema has the ${option} option enabled.`;
     super(msg);

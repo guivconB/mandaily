@@ -7,42 +7,35 @@ class Passo1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1E1E1E),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('lib/assets/images/fundopasso1.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack( // Adicione o Stack aqui
           children: [
-            Image.asset(
-              'lib/assets/images/logo.png',
-              width: 500,
-              height: 150,
+            Center(
             ),
-            const SizedBox(height: 20),
-            const Padding( // Adicionado Padding para melhor visualização do texto
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
-              child: Text(
-                "Bem vindo ao ManDaily, um aplicativo de gerenciamento de agenda voltado à saúde do homem.",
-                textAlign: TextAlign.center, // Centraliza o texto
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+            // Botão Avançar
+            Positioned(
+              right: 20,
+              bottom: 20,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Passo2()),
+                  );
+                },
+                child: Image.asset(
+                  'lib/assets/images/avancar.png',
+                  width: 100, // ajuste o tamanho se necessário
                 ),
               ),
-            ),
-            const SizedBox(height: 30), // Espaço antes do botão
-            IconButton(
-              icon: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 40), // Ícone de seta
-              onPressed: () {
-                // Se estiver usando a Opção 1 do main.dart (navegação manual):
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Passo2()),
-                );
-                // Se estiver usando a Opção 2 do main.dart (rotas nomeadas):
-                // Navigator.pushNamed(context, '/passo2');
-              },
             ),
           ],
         ),

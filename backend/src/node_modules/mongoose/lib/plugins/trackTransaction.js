@@ -27,13 +27,6 @@ module.exports = function trackTransaction(schema) {
       initialState.atomics = _getAtomics(this);
 
       session[sessionNewDocuments].set(this, initialState);
-    } else {
-      const state = session[sessionNewDocuments].get(this);
-
-      for (const path of Object.keys(this.$__.activePaths.getStatePaths('modify'))) {
-        state.modifiedPaths.add(path);
-      }
-      state.atomics = _getAtomics(this, state.atomics);
     }
   });
 };
@@ -85,7 +78,7 @@ function mergeAtomics(destination, source) {
     destination.$addToSet = (destination.$addToSet || []).concat(source.$addToSet);
   }
   if (source.$set != null) {
-    destination.$set = Object.assign(destination.$set || {}, source.$set);
+    destination.$set = Array.isArray(source.$set) ? [...source.$set] : Object.assign({}, source.$set);
   }
 
   return destination;

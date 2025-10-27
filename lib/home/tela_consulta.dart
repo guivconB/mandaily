@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-
+import 'package:mandaily/anotacoes.dart';
+import 'package:mandaily/home/remedios/adicionar_remedio.dart';
+import 'package:mandaily/home/remedios/tela_remedio.dart';
+import 'package:mandaily/calendar_screen.dart';
+import 'package:mandaily/anotacoes.dart';
 class TelaConsulta extends StatefulWidget {
   const TelaConsulta({super.key});
 
@@ -10,6 +14,9 @@ class TelaConsulta extends StatefulWidget {
 }
 
 class _TelaConsultaState extends State<TelaConsulta> {
+  // 1. Crie uma GlobalKey para o Scaffold
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   late DateTime _selectedDate;
   final List<DateTime> _diasDoMes = [];
 
@@ -29,7 +36,63 @@ class _TelaConsultaState extends State<TelaConsulta> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // A estrutura principal da tela (body) continua a mesma
+      // 2. Associe a key ao Scaffold
+      key: _scaffoldKey,
+
+      // 3. Adicione o Drawer (o menu lateral)
+      drawer: Drawer(
+        backgroundColor: const Color(0xFF1E1E1E), // Cor de fundo do menu
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            // Cabeçalho do Drawer (opcional, mas recomendado)
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color(0xFF2C2C2E),
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            // Item 1 do Menu
+            ListTile(
+              leading: const Icon(Icons.home, color: Colors.white),
+              title: const Text('Início', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                // Navegar para a tela inicial ou fechar o drawer
+                Navigator.pop(context);
+              },
+            ),
+            // Item 2 do Menu
+            ListTile(
+              leading: const Icon(Icons.note, color: Colors.white),
+              title: const Text('Anotações', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                // Ação para o item
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AnotacoesPage()), // Certifique-se que o nome da classe está correto
+                );
+              },
+            ),
+            // Item 3 do Menu
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.white),
+              title: const Text('Perfil', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                // Ação para o item
+                Navigator.pop(context);
+              },
+            ),
+            // Adicione mais seções (ListTile) aqui
+          ],
+        ),
+      ),
+
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -50,11 +113,19 @@ class _TelaConsultaState extends State<TelaConsulta> {
                   children: [
                     IconButton(
                       icon: Image.asset('lib/assets/images/iconcalendar.png', width: 28, height: 28),
-                      onPressed: () => print('Botão de Calendário pressionado!'),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const CalendarScreen()),
+                        );
+                      },
                     ),
                     IconButton(
                       icon: Image.asset('lib/assets/images/icon3barras.png', width: 28, height: 28),
-                      onPressed: () => print('Botão de Menu pressionado!'),
+                      // 4. Modifique o onPressed para abrir o Drawer
+                      onPressed: () {
+                        _scaffoldKey.currentState?.openDrawer();
+                      },
                     ),
                   ],
                 ),
@@ -131,59 +202,70 @@ class _TelaConsultaState extends State<TelaConsulta> {
         ),
       ),
 
-      // --- INÍCIO DA NOVA SEÇÃO DE BOTÕES FLUTUANTES ---
-
-      // 1. O Botão de Ação Flutuante Principal (o do meio)
+      // --- O RESTANTE DO SEU CÓDIGO (floatingActionButton, bottomNavigationBar) PERMANECE O MESMO ---
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          print('Botão central (+) pressionado!');
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AdicionarRemedio()),
+          );
         },
-        backgroundColor: const Color(0xFF48484A), // Cinza escuro, como na imagem
-        elevation: 4.0, // Uma pequena sombra para dar profundidade
-        shape: const CircleBorder(), // Garante que ele seja perfeitamente redondo
+
+        backgroundColor: const Color(0xFF48484A),
+        elevation: 4.0,
+        shape: const CircleBorder(),
         child: const Icon(
           Icons.add,
           color: Colors.white,
           size: 32,
         ),
       ),
-
-      // 2. A localização do botão principal
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
-      // 3. A barra inferior que segura os botões laterais
       bottomNavigationBar: BottomAppBar(
-        color: const Color(0xFF2C2C2E), // Cor da barra inferior
-        shape: const CircularNotchedRectangle(), // Cria o "entalhe" para o botão central
-        notchMargin: 8.0, // O espaço entre o botão e a barra
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        color: const Color(0xFF2C2C2E),
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8.0,
+        child: Padding(          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              // --- BOTÃO DA ESQUERDA (MODIFICADO) ---
+              // --- ÍCONE DA ESQUERDA (ATIVO) ---
               IconButton(
-                // Substituímos o Icon por Image.asset
-                // **IMPORTANTE**: Coloque o caminho correto da sua imagem aqui!
+                // Ícone de saúde preenchido, pois estamos na tela de consulta.
                 icon: Image.asset('lib/assets/images/iconesaude.png', width: 30, height: 30),
                 onPressed: () {
-                  print('Botão da esquerda pressionado!');
+                  // Ação desnecessária, já estamos nesta tela.
+                  print('Já está na Tela de Consulta.');
                 },
               ),
-              // --- BOTÃO DA DIREITA (MODIFICADO) ---
+
+              // --- ÍCONE DA DIREITA (INATIVO) ---
               IconButton(
-                // Substituímos o Icon por Image.asset
-                // **IMPORTANTE**: Coloque o caminho correto da sua imagem aqui!
+                // Ícone de pílula vazio, para navegar para a tela de remédios.
+                // ATENÇÃO: Substitua 'pilulavazia.png' pelo nome correto do seu arquivo de imagem.
                 icon: Image.asset('lib/assets/images/iconpilula.png', width: 30, height: 30),
                 onPressed: () {
-                  print('Botão da direita pressionado!');
+                  // A navegação com PageRouteBuilder que já fizemos.
+                  Navigator.pushReplacement( // Usando pushReplacement para não empilhar telas
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => const TelaRemedio(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        );
+                      },
+                      transitionDuration: const Duration(milliseconds: 300),
+                    ),
+                  );
                 },
               ),
+
             ],
           ),
         ),
       ),
-      // --- FIM DA SEÇÃO ---
     );
   }
 }

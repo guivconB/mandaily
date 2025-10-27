@@ -154,33 +154,43 @@ class _TelaRemedioState extends State<TelaRemedio> {
 
       // 3. A barra inferior que segura os botões laterais
       bottomNavigationBar: BottomAppBar(
-        color: const Color(0xFF2C2C2E), // Cor da barra inferior
-        shape: const CircularNotchedRectangle(), // Cria o "entalhe" para o botão central
-        notchMargin: 8.0, // O espaço entre o botão e a barra
+        color: const Color(0xFF2C2C2E),
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8.0,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              // --- BOTÃO DA ESQUERDA (MODIFICADO) ---
+              // --- ÍCONE DA ESQUERDA (INATIVO) ---
               IconButton(
-                // Substituímos o Icon por Image.asset
-                // **IMPORTANTE**: Coloque o caminho correto da sua imagem aqui!
-                icon: Image.asset('lib/assets/images/iconesaude.png', width: 30, height: 30),
+                // Ícone de saúde vazio, para navegar para a tela de consulta.
+                icon: Image.asset('lib/assets/images/saudevazio.png', width: 30, height: 30),
                 onPressed: () {
-                  Navigator.push(
+                  // A navegação com PageRouteBuilder que já fizemos.
+                  Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const TelaConsulta()),
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => const TelaConsulta(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        );
+                      },
+                      transitionDuration: const Duration(milliseconds: 300),
+                    ),
                   );
                 },
               ),
-              // --- BOTÃO DA DIREITA (MODIFICADO) ---
+
+              // --- ÍCONE DA DIREITA (ATIVO) ---
               IconButton(
-                // Substituímos o Icon por Image.asset
-                // **IMPORTANTE**: Coloque o caminho correto da sua imagem aqui!
-                icon: Image.asset('lib/assets/images/iconpilula.png', width: 30, height: 30),
+                // Ícone de pílula preenchido, pois estamos na tela de remédios.
+                icon: Image.asset('lib/assets/images/iconepilula.png', width: 30, height: 30),
                 onPressed: () {
-                  print('Botão da direita pressionado!');
+                  // Ação desnecessária, já estamos nesta tela.
+                  print('Já está na Tela de Remédio.');
                 },
               ),
             ],

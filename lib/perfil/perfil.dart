@@ -42,15 +42,7 @@ class _PerfilState extends State<Perfil> {
             ),
             //Cria o primeiro card de perfil
 
-            PerfilComponentes(
-              nome: 'Nome Sobrenome',
-              nascimento: 'dd/mm/aaaa',
-              notificacoes: notificacoes2,
-              temaEscuro: temaEscuro2,
-              onNotificacoesChanged: (val) => setState(() => notificacoes2 = val),
-              onTemaChanged: (val) => setState(() => temaEscuro2 = val),
-              isSelected: selectedPerfil == 2,
-            ),
+
             //Cria o segundo card de perfil
 
           ],

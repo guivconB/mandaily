@@ -5,6 +5,7 @@ import 'package:mandaily/anotacoes.dart';
 import 'package:mandaily/home/remedios/adicionar_remedio.dart';
 import 'package:mandaily/home/remedios/tela_remedio.dart';
 import 'package:mandaily/calendar_screen.dart';
+import 'package:mandaily/perfil/perfil.dart';
 import 'package:mandaily/anotacoes.dart';
 class TelaConsulta extends StatefulWidget {
   const TelaConsulta({super.key});
@@ -85,9 +86,12 @@ class _TelaConsultaState extends State<TelaConsulta> {
               title: const Text('Perfil', style: TextStyle(color: Colors.white)),
               onTap: () {
                 // Ação para o item
-                Navigator.pop(context);
-              },
-            ),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (
+                      context) => Perfil()), // Certifique-se que o nome da classe está correto
+                );
+              }),
             // Adicione mais seções (ListTile) aqui
           ],
         ),

@@ -5,6 +5,7 @@ import 'package:mandaily/anotacoes.dart';
 import 'package:mandaily/home/remedios/adicionar_remedio.dart';
 import 'package:mandaily/home/remedios/tela_remedio.dart';
 import 'package:mandaily/calendar_screen.dart';
+import 'package:mandaily/perfil/perfil.dart';
 import 'package:mandaily/anotacoes.dart';
 class TelaConsulta extends StatefulWidget {
   const TelaConsulta({super.key});
@@ -85,9 +86,12 @@ class _TelaConsultaState extends State<TelaConsulta> {
               title: const Text('Perfil', style: TextStyle(color: Colors.white)),
               onTap: () {
                 // Ação para o item
-                Navigator.pop(context);
-              },
-            ),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (
+                      context) => Perfil()), // Certifique-se que o nome da classe está correto
+                );
+              }),
             // Adicione mais seções (ListTile) aqui
           ],
         ),
@@ -225,27 +229,43 @@ class _TelaConsultaState extends State<TelaConsulta> {
         color: const Color(0xFF2C2C2E),
         shape: const CircularNotchedRectangle(),
         notchMargin: 8.0,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Padding(          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
+              // --- ÍCONE DA ESQUERDA (ATIVO) ---
               IconButton(
+                // Ícone de saúde preenchido, pois estamos na tela de consulta.
                 icon: Image.asset('lib/assets/images/iconesaude.png', width: 30, height: 30),
                 onPressed: () {
-                  print('Botão da esquerda pressionado!');
+                  // Ação desnecessária, já estamos nesta tela.
+                  print('Já está na Tela de Consulta.');
                 },
               ),
+
+              // --- ÍCONE DA DIREITA (INATIVO) ---
               IconButton(
+                // Ícone de pílula vazio, para navegar para a tela de remédios.
+                // ATENÇÃO: Substitua 'pilulavazia.png' pelo nome correto do seu arquivo de imagem.
                 icon: Image.asset('lib/assets/images/iconpilula.png', width: 30, height: 30),
                 onPressed: () {
-                  Navigator.push(
+                  // A navegação com PageRouteBuilder que já fizemos.
+                  Navigator.pushReplacement( // Usando pushReplacement para não empilhar telas
                     context,
-                    MaterialPageRoute(builder: (context) => const TelaRemedio()),
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => const TelaRemedio(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        );
+                      },
+                      transitionDuration: const Duration(milliseconds: 300),
+                    ),
                   );
-
                 },
               ),
+
             ],
           ),
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mandaily/anotacoes.dart'; // <<< ADIÇÃO 1: Importar tela de anotações
 import 'package:table_calendar/table_calendar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +12,9 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
+  // --- ADIÇÃO 2: Chave global para o Scaffold (para controlar o Drawer) ---
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
@@ -29,7 +33,60 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final monthsRemaining = 12 - currentMonth + 1;
 
     return Scaffold(
+      // --- ADIÇÃO 3: Associar a chave ao Scaffold ---
+      key: _scaffoldKey,
+
       backgroundColor: const Color(0xFF121212),
+
+      // --- ADIÇÃO 4: Adicionar o Drawer (menu lateral) ---
+      drawer: Drawer(
+        backgroundColor: const Color(0xFF1E1E1E), // Cor de fundo do menu
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color(0xFF2C2C2E),
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home, color: Colors.white),
+              title: const Text('Início', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                // Fecha o drawer e volta para a tela anterior (Home)
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.note, color: Colors.white),
+              title: const Text('Anotações', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context); // Fecha o drawer primeiro
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AnotacoesPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.white),
+              title: const Text('Perfil', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+
       appBar: AppBar(
         backgroundColor: const Color(0xFF121212),
         elevation: 0,
@@ -46,10 +103,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
         ),
         centerTitle: true,
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.menu, color: Colors.white),
+        // --- MODIFICAÇÃO 1: Alterar o ícone e a ação do botão direito ---
+        actions: [
+          IconButton(
+            // Use o mesmo ícone das outras telas para consistência
+            icon: Image.asset('lib/assets/images/icon3barras.png', width: 28, height: 28),
+            onPressed: () {
+              // Ação para abrir o Drawer
+              _scaffoldKey.currentState?.openDrawer();
+            },
           ),
         ],
       ),

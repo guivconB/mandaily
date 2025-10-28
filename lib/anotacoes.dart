@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
 
 // Modelo de Dados simples para a Nota (melhor que apenas String)
 class Nota {
   String conteudo;
-  DateTime dataCriacao;
+  // Alterado para String para simplificar a conversão JSON (ISO 8601)
+  String dataCriacao;
 
-  Nota(this.conteudo) : dataCriacao = DateTime.now();
+  // CONSTRUTOR: Cria uma nova nota com a data atual formatada
+  Nota(this.conteudo) : dataCriacao = DateTime.now().toIso8601String();
+
+  // CONSTRUTOR NOMEADO: Cria uma nota a partir de um mapa JSON (para carregar)
+  Nota.fromJson(Map<String, dynamic> json)
+      : conteudo = json['conteudo'] as String,
+        dataCriacao = json['dataCriacao'] as String;
+
+  // MÉTODO: Converte a nota em um mapa JSON (para salvar)
+  Map<String, dynamic> toJson() => {
+    'conteudo': conteudo,
+    'dataCriacao': dataCriacao,
+  };
 }
 
 
@@ -23,6 +39,49 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
   // Lista que armazena todas as notas
   final List<Nota> _notas = [];
 
+  // ADICIONADO: Carrega as notas salvas quando a tela é iniciada
+  @override
+  void initState() {
+    super.initState();
+    _carregarNotas();
+  }
+
+  // ADICIONADO: Função assíncrona para carregar as notas salvas
+  Future<void> _carregarNotas() async {
+    final prefs = await SharedPreferences.getInstance();
+    // Tenta obter a lista de Strings (que são os JSONs das notas)
+    final List<String>? notasJsonList = prefs.getStringList('anotacoes_salvas');
+
+    if (notasJsonList != null) {
+      setState(() {
+        // Converte cada string JSON de volta para o objeto Nota
+        _notas.clear(); // Limpa a lista antes de carregar
+        for (var jsonString in notasJsonList) {
+          try {
+            final Map<String, dynamic> notaMap = jsonDecode(jsonString);
+            _notas.add(Nota.fromJson(notaMap));
+          } catch (e) {
+            // Caso alguma string salva esteja corrompida, ignora
+            print('Erro ao decodificar nota: $e');
+          }
+        }
+      });
+    }
+  }
+
+  // ADICIONADO: Função assíncrona para salvar a lista de notas
+  Future<void> _salvarNotas() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Converte a lista de objetos Nota em uma lista de strings JSON
+    final List<String> notasJsonList = _notas
+        .map((nota) => jsonEncode(nota.toJson()))
+        .toList();
+
+    // Salva a lista de strings
+    await prefs.setStringList('anotacoes_salvas', notasJsonList);
+  }
+
   // Função para abrir a tela de adicionar nota
   void _adicionarNota() async {
     // Espera o resultado (a nota) que virá da AdicionarNotaPage
@@ -36,6 +95,8 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
       setState(() {
         _notas.add(Nota(novaNotaConteudo));
       });
+      // ADICIONADO: Salva a lista após adicionar
+      _salvarNotas();
     }
   }
 
@@ -44,6 +105,8 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
     setState(() {
       _notas.removeAt(index);
     });
+    // ADICIONADO: Salva a lista após remover
+    _salvarNotas();
   }
 
   @override
@@ -73,6 +136,9 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
         itemCount: _notas.length,
         itemBuilder: (context, index) {
           final nota = _notas[index];
+          // CONVERTENDO A STRING ISO DE VOLTA PARA DATETIME para formatação
+          final dataOriginal = DateTime.parse(nota.dataCriacao);
+
           return Card(
             color: const Color(0xFF1E1E1E), // Cor de fundo de cada nota
             margin: const EdgeInsets.symmetric(vertical: 4),
@@ -84,7 +150,8 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
                 style: const TextStyle(color: Colors.white),
               ),
               subtitle: Text(
-                'Criado em: ${nota.dataCriacao.day.toString().padLeft(2, '0')}/${nota.dataCriacao.month.toString().padLeft(2, '0')} ${nota.dataCriacao.hour.toString().padLeft(2, '0')}:${nota.dataCriacao.minute.toString().padLeft(2, '0')}',
+                // Usando a data convertida para exibir
+                'Criado em: ${dataOriginal.day.toString().padLeft(2, '0')}/${dataOriginal.month.toString().padLeft(2, '0')} ${dataOriginal.hour.toString().padLeft(2, '0')}:${dataOriginal.minute.toString().padLeft(2, '0')}',
                 style: const TextStyle(color: Colors.grey),
               ),
               trailing: IconButton(
@@ -112,6 +179,7 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
 
 
 // 2. TELA SECUNDÁRIA: AdicionarNotaPage
+// Não precisa de mudanças, pois apenas retorna a string
 
 class AdicionarNotaPage extends StatefulWidget {
   const AdicionarNotaPage({super.key});

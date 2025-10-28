@@ -35,10 +35,14 @@ dependencies:
   intl: ^0.20.2
   table_calendar: ^3.1.0
   google_fonts: ^6.2.1
+  shared_preferences:
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+
+
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

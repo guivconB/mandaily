@@ -11,9 +11,7 @@ class Perfil extends StatefulWidget {
 class _PerfilState extends State<Perfil> {
   int selectedPerfil = 1;
   bool notificacoes1 = true;
-  bool temaEscuro1 =true;
-  bool notificacoes2 = false;
-  bool temaEscuro2 = false;
+  bool temaEscuro1 = true;
 //Defini as variáveis que controlam o perfil
 
   @override
@@ -41,10 +39,6 @@ class _PerfilState extends State<Perfil> {
               isSelected: selectedPerfil == 1,
             ),
             //Cria o primeiro card de perfil
-
-
-            //Cria o segundo card de perfil
-
           ],
         ),
       ),

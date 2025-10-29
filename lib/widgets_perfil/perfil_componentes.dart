@@ -42,7 +42,7 @@ class PerfilComponentes extends StatelessWidget {
 
       child: Column(
         children: [
-      //Usa uma Column para empilahr todos os elementos na vertical
+      //Usa uma Column para empilhar todos os elementos na vertical
 
           CircleAvatar(radius: 30, backgroundColor: Colors.grey[700]),
           SizedBox(height: 10),
@@ -50,19 +50,57 @@ class PerfilComponentes extends StatelessWidget {
           Text(nascimento, style: TextStyle(color: Colors.white70)),
           //Ícone de perfil
 
-          SwitchListTile(
-            title: Text('Notificações', style: TextStyle(color: Colors.white)),
-            value: notificacoes,
-            onChanged: onNotificacoesChanged,
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            margin: EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.grey[850],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.notifications, color: Colors.white),
+                    SizedBox(width: 10),
+                    Text('Notificações', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+                Switch(
+                  value: notificacoes,
+                  onChanged: onNotificacoesChanged,
+                ),
+              ],
+            ),
           ),
-          //Cria um botão que alterna o título "Notificações"
+          //Cria o botão de notificações
 
-          SwitchListTile(
-            title: Text('Tema escuro', style: TextStyle(color: Colors.white)),
-            value: temaEscuro,
-            onChanged: onTemaChanged,
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            margin: EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.grey[850],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.dark_mode, color: Colors.white),
+                    SizedBox(width: 10),
+                    Text('Tema escuro', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+                Switch(
+                  value: temaEscuro,
+                  onChanged: onTemaChanged,
+                ),
+              ],
+            ),
           ),
-          //Alterna para o tema escuro
+          //Cria o botão de tema escuro
         ],
       ),
     );

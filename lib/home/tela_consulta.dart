@@ -6,7 +6,6 @@ import 'package:mandaily/home/remedios/adicionar_remedio.dart';
 import 'package:mandaily/home/remedios/tela_remedio.dart';
 import 'package:mandaily/calendar_screen.dart';
 import 'package:mandaily/perfil/perfil.dart';
-import 'package:mandaily/anotacoes.dart';
 class TelaConsulta extends StatefulWidget {
   const TelaConsulta({super.key});
 

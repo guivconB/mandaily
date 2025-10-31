@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mandaily/validators/user_validators.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:mandaily/auth/login.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -38,7 +41,7 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  void _criarConta() {
+  void _criarConta() async {
     if (!_termosAceitos) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Você deve aceitar os Termos de Uso.')),
@@ -47,11 +50,69 @@ class _RegisterState extends State<Register> {
     }
 
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Conta criada com sucesso!")),
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const Center(child: CircularProgressIndicator());
+        },
       );
+
+      const String apiUrl = 'http://192.168.1.128:3000/user'; // ✅ MANTENHA SEU IP!
+
+      try {
+        // --- ✨ INÍCIO DA CORREÇÃO ---
+        // 1. Converte o texto da data (ex: "31/10/2025") para um objeto DateTime.
+        final DateFormat inputFormat = DateFormat('dd/MM/yyyy');
+        final DateTime dateTime = inputFormat.parse(_dataController.text);
+
+        // 2. Formata o objeto DateTime para o padrão ISO 8601 (ex: "2025-10-31T...")
+        final String dataFormatadaParaBackend = dateTime.toIso8601String();
+        // --- ✨ FIM DA CORREÇÃO ---
+
+        final response = await http.post(
+          Uri.parse(apiUrl),
+          headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(<String, String>{
+            'nome': _nomeController.text,
+            'email': _emailController.text,
+            'senha': _senhaController.text,
+            'dataNascimento': dataFormatadaParaBackend, // <-- ✨ USANDO A DATA FORMATADA
+          }),
+        );
+
+        Navigator.pop(context); // Fecha o indicador de carregamento
+
+        if (response.statusCode == 201) {
+          // Sucesso!
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Conta criada com sucesso! Faça o login.")),
+          );
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const Login()),
+                (Route<dynamic> route) => false,
+          );
+        } else {
+          // Erro do servidor (ex: e-mail já existe)
+          final responseBody = jsonDecode(response.body);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro: ${responseBody['message']}')),
+          );
+        }
+      } catch (e) {
+        Navigator.pop(context); // Fecha o indicador de carregamento
+        // Agora o erro de conexão será mais específico para problemas de rede
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro de conexão: $e. Verifique o IP e a rede.')),
+        );
+      }
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {

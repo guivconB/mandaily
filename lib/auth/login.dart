@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:mandaily/auth/register.dart';
 import 'package:mandaily/home/tela_consulta.dart';
 import '../passos/passo5.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -11,6 +15,66 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  void _fazerLogin() async {
+    // Validação simples para não enviar requisição vazia
+    if (_emailController.text.isEmpty || _senhaController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, preencha e-mail e senha.')),
+      );
+      return;
+    }
+
+    // Exibe um indicador de carregamento
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    // ❗ MUITO IMPORTANTE: Use o IP da sua máquina, não localhost.
+    const String apiUrl = 'http://192.168.1.128:3000/login'; // ⬅️ SUBSTITUA PELO SEU IP!
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode(<String, String>{
+          'email': _emailController.text.trim(), // .trim() remove espaços em branco
+          'senha': _senhaController.text.trim(),
+        }),
+      );
+
+      Navigator.pop(context); // Fecha o indicador de carregamento
+
+      if (response.statusCode == 200) {
+        // Sucesso no Login!
+        // 1. Salvar o estado de login no dispositivo
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+
+        // 2. Navegar para a tela principal, removendo as telas anteriores da pilha
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const TelaConsulta()),
+              (Route<dynamic> route) => false,
+        );
+      } else {
+        // Erro (e-mail/senha incorretos ou outro problema)
+        final responseBody = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro: ${responseBody['message']}')),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context); // Garante que o loading feche em caso de erro de conexão
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro de conexão com o servidor: $e')),
+      );
+    }
+  }
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _senhaController = TextEditingController();
   // função pra padronizar o estilo dos textfields
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
@@ -95,8 +159,11 @@ class _LoginState extends State<Login> {
             ),
             const SizedBox(height: 10),
             TextField(
+              controller: _emailController, // Adicione esta linha
               decoration: _inputDecoration('...'),
+              keyboardType: TextInputType.emailAddress, // Melhora a usabilidade
             ),
+
 
             const SizedBox(height: 16),
 
@@ -110,6 +177,7 @@ class _LoginState extends State<Login> {
             ),
             const SizedBox(height: 10),
             TextField(
+              controller: _senhaController, // Adicione esta linha
               obscureText: true,
               decoration: _inputDecoration('••••••••'),
             ),
@@ -142,7 +210,8 @@ class _LoginState extends State<Login> {
               child: SizedBox(
                 width: 280, // a largura
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: _fazerLogin,
+                  onLongPress: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) =>  TelaConsulta()),

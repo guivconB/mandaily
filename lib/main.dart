@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'splascreen.dart';
-// Remova as importações de Passo1 e Passo2 se a navegação
-// for totalmente gerenciada dentro das telas (como está agora)
-// import 'passos/passo1.dart';
-// import 'passos/passo2.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mandaily/home/tela_consulta.dart';
 
-void main() {
-  runApp(const MyApp());
+// 1. Transforme a função main em assíncrona
+void main() async {
+  // 2. Garanta que o Flutter esteja inicializado antes de usar plugins
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 3. Verifique o estado do login
+  final prefs = await SharedPreferences.getInstance();
+  // Usa '?? false' para o caso de ser a primeira vez que o app abre e a chave não existe
+  final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+  // 4. Passe a informação para o MyApp
+  runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  // 5. Receba o status de login
+  final bool isLoggedIn;
+  const MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -19,61 +29,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const SplashScreen(), // Define SplashScreen como a tela inicial
-      // Remova initialRoute e routes se estiver usando a navegação como no SplashScreen
-      // initialRoute: '/',
-      // routes: {
-      //   '/': (context) => const Passo1(), // SplashScreen já navega para cá
-      //   '/passo2': (context) => const Passo2(),
-      // },
+      // 6. Decida a tela inicial com base no status do login
+      //    Se o usuário já está logado, ele pula a SplashScreen e vai direto para a TelaConsulta.
+      //    Caso contrário, ele vê a SplashScreen, que então navegará para a tela de login/registro (Passo5).
+      home: isLoggedIn ? const TelaConsulta() : const SplashScreen(),
     );
   }
 }
 
-// ... (Restante do código de MyHomePage, se ainda for necessário para outras partes)
-// Se MyHomePage não for mais usado, pode ser removido.
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-}

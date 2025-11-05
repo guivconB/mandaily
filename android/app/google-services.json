@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "591318299517",
+    "project_id": "mandailynassau",
+    "storage_bucket": "mandailynassau.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:591318299517:android:26c6eb9aa69ca71bb65214",
+        "android_client_info": {
+          "package_name": "com.example.mandaily"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBY0TTXGJHTkbfsn5QjR4laO8n8AF1XjMw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -58,7 +58,7 @@ class _RegisterState extends State<Register> {
         },
       );
 
-      const String apiUrl = 'http://192.168.1.128:3000/user'; // ✅ MANTENHA SEU IP!
+      const String apiUrl = 'http://192.168.1.9:3000/user'; // ✅ MANTENHA SEU IP!
 
       try {
         // --- ✨ INÍCIO DA CORREÇÃO ---

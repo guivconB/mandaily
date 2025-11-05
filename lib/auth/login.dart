@@ -32,7 +32,7 @@ class _LoginState extends State<Login> {
     );
 
     // ❗ MUITO IMPORTANTE: Use o IP da sua máquina, não localhost.
-    const String apiUrl = 'http://192.168.1.128:3000/login'; // ⬅️ SUBSTITUA PELO SEU IP!
+    const String apiUrl = 'http://192.168.1.9:3000/login'; // ⬅️ SUBSTITUA PELO SEU IP!
 
     try {
       final response = await http.post(

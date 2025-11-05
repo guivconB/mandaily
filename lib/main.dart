@@ -1,25 +1,33 @@
 import 'package:flutter/material.dart';
-import 'splascreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mandaily/home/tela_consulta.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'splascreen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'FCM.dart';
 
-// 1. Transforme a função main em assíncrona
 void main() async {
-  // 2. Garanta que o Flutter esteja inicializado antes de usar plugins
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized(); // Inicializa o Flutter antes do Firebase
 
-  // 3. Verifique o estado do login
+  // Inicializa o Firebase com as opções do seu projeto
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  String? fcmToken = await FCMService.getFCMToken();
+  print("FCM Token no main: $fcmToken");
+
+  // Verifica o estado do login
   final prefs = await SharedPreferences.getInstance();
-  // Usa '?? false' para o caso de ser a primeira vez que o app abre e a chave não existe
   final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
-  // 4. Passe a informação para o MyApp
+  // Executa o app, passando o status de login
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 
 class MyApp extends StatelessWidget {
-  // 5. Receba o status de login
   final bool isLoggedIn;
+
   const MyApp({super.key, required this.isLoggedIn});
 
   @override
@@ -29,11 +37,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      // 6. Decida a tela inicial com base no status do login
-      //    Se o usuário já está logado, ele pula a SplashScreen e vai direto para a TelaConsulta.
-      //    Caso contrário, ele vê a SplashScreen, que então navegará para a tela de login/registro (Passo5).
+      // Define a tela inicial com base no status de login
       home: isLoggedIn ? const TelaConsulta() : const SplashScreen(),
     );
   }
 }
-

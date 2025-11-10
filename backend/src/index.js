@@ -7,7 +7,7 @@ import express from 'express';
 
 import userRoutes from './routes/userRoutes.js';
 import medicationRoutes from './routes/medicationRoutes.js';
-import consultaRoutes from './routes/consultaRoutes.js';
+import consultaRoutes from './routes/appointmentRoutes.js';
 import scheduleRoutes from './routes/scheduleRoutes.js';
 
 import conectaNaDatabase from './config/dbConnection.js';

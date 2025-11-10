@@ -1,34 +1,21 @@
-
-import Medicamento from '../models/medicationModel.js';
+import { criarMedicamento, listarMedicamentos , listarMedicamentoPorId, atualizarMedicamento, deletarMedicamento } from '../services/medicationService.js'; 
 
 // Criar medicamento
-export const novoMedicamento = async (req, res) => {
-	try {
-		const { nome, tipo, dose, horarioInicio, dataInicio, dias, frequencia, numeroDias} = (req.body);
-		const novoMedicamento = new Medicamento ({
-			nome,
-			tipo,
-			dose,
-			horarioInicio,
-			dataInicio,
-			dias,
-			frequencia,
-			numeroDias
-		});
+export const novoMedicamentoController = async (req, res) => {
+  try {
+    const novoMedicamento = await criarMedicamento(req.body);
 
-		await novoMedicamento.save();
-		res.status(201).json(novoMedicamento);
-
-		} catch (error) {
-		res.status(400).json({ error: error.message });
-	}
-}
+    res.status(201).json({ message: "Medicamento criado com sucesso!", medicamento: novoMedicamento });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
 
 
 // Listar todos medicamentos
-export const listarMedicamentos = async (req, res) => {
+export const listarMedicamentosController = async (req, res) => {
 	try {
-		const Medicamentos = await Medicamento.find();
+		const Medicamentos = await listarMedicamentos();
 		res.json(Medicamentos);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
@@ -36,9 +23,9 @@ export const listarMedicamentos = async (req, res) => {
 };
 
 // Buscar medicamento por ID
-export const listarMedicamentosPorId = async (req, res) => {
+export const listarMedicamentoPorIdController = async (req, res) => {
 	try {
-		const Medicamento = await Medicamento.findById(req.params.id);
+		const Medicamento = await listarMedicamentoPorId(req.params.id);
 		if (!Medicamento) return res.status(404).json({ error: 'Medicamento não encontrado' });
 		res.json(Medicamento);
 	} catch (error) {
@@ -47,9 +34,9 @@ export const listarMedicamentosPorId = async (req, res) => {
 };
 
 // Atualizar medicamento
-export const atualizarMedicamento = async (req, res) => {
+export const atualizarMedicamentoController = async (req, res) => {
 	try {
-		const Medicamento = await Medicamento.findByIdAndUpdate(req.params.id, req.body, { new: true });
+		const Medicamento = await atualizarMedicamento(req.params.id, req.body, { new: true });
 		if (!Medicamento) return res.status(404).json({ error: 'Medicamento não encontrado' });
 		res.json(Medicamento);
 	} catch (error) {
@@ -58,9 +45,9 @@ export const atualizarMedicamento = async (req, res) => {
 };
 
 // Deletar medicamento
-export const deletarMedicamento = async (req, res) => {
+export const deletarMedicamentoController = async (req, res) => {
 	try {
-		const Medicamento = await Medicamento.findByIdAndDelete(req.params.id);
+		const Medicamento = await deletarMedicamento(req.params.id);
 		if (!Medicamento) return res.status(404).json({ error: 'Medicamento não encontrado' });
 		res.json({ message: 'Medicamento deletado com sucesso' });
 	} catch (error) {

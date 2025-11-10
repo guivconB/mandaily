@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const agendamentoSchema = new mongoose.Schema({
 
-    user: { type: mongoose.Schema.Types.ObjectId, ref:"User", required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref:"User", required: true },
     nome: { type: String, required: true },
     tipoAgendamento: { type: String, enum: ["medicamento","consulta"], required: true },
     dataAgendamento: { type: Date, required: true },

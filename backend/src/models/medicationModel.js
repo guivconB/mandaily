@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const MedicationSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref:"User", required: true },
   nome: { type: String, required: true },
   tipo: { type: String, required: true }, // comprimido, cápsula, etc.
   dose: { type: Number, required: true },
@@ -8,7 +9,8 @@ const MedicationSchema = new mongoose.Schema({
   dataInicio: { type: Date, required: true },
   dias: { type: String, required: true }, // diário, semanal, etc.
   frequencia: { type: String, required: true }, // Ex: '6 horas'
-  numeroDias: { type: Number, required: true }
+  numeroDias: { type: Number, required: true },
+  notificacaoDiaria: { type: Boolean }
 });
 
 const Medication = mongoose.model('Medication', MedicationSchema);

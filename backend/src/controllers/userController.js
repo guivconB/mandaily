@@ -21,13 +21,14 @@ import { novoCadastro, listarCadastros, buscarCadastroPorEmail, buscarCadastroPo
  };
 
  export const buscarCadastroPorEmailController = async (req, res) => {
-  try {
-    const Usuario = await buscarCadastroPorEmail(req.params.id);
-    res.status(201).json(Usuario);
-  } catch (error) {
-    res.status(400).json({ message: error.message })
-  }
-};
+   try {
+     // Corrija req.params.id para req.params.email para coincidir com a rota
+     const Usuario = await buscarCadastroPorEmail(req.params.email);
+     res.status(201).json(Usuario);
+   } catch (error) {
+     res.status(400).json({ message: error.message })
+   }
+ };
 
 export const buscarCadastroPorIdController = async (req, res) => {
   try {

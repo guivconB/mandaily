@@ -5,7 +5,7 @@ import { novoCadastro, listarCadastros, buscarCadastroPorEmail, buscarCadastroPo
  export const novoCadastroController = async (req, res) => {
   try {
     const Usuario = await novoCadastro(req.body);
-    res.status(201).json({ message: `Usuário cadastrado com sucesso! ${Usuario}`});
+    res.status(201).json({ message: `Usuário cadastrado com sucesso!`, Usuario });
   } catch (error) {
     res.status(400).json({ message: error.messsage });
   }
@@ -14,7 +14,7 @@ import { novoCadastro, listarCadastros, buscarCadastroPorEmail, buscarCadastroPo
  export const listarCadastrosController = async (req, res) => {
   try {
     const Usuarios = await listarCadastros();
-    res.status(201).json({ message: `Lista Completa de Usuários: ${Usuarios}` })
+    res.status(201).json({ message: `Lista Completa de Usuários:`, Usuarios })
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -22,7 +22,7 @@ import { novoCadastro, listarCadastros, buscarCadastroPorEmail, buscarCadastroPo
 
  export const buscarCadastroPorEmailController = async (req, res) => {
   try {
-    const Usuario = await buscarCadastroPorEmail(req.params.id);
+    const Usuario = await buscarCadastroPorEmail(req.params.email);
     res.status(201).json(Usuario);
   } catch (error) {
     res.status(400).json({ message: error.message })

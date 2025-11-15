@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const MedicationSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref:"User", required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref:"User", required: true },
   nome: { type: String, required: true },
   tipo: { type: String, required: true }, // comprimido, cápsula, etc.
   dose: { type: Number, required: true },

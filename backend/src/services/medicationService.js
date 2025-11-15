@@ -2,10 +2,10 @@ import Medicamento from '../models/medicationModel.js';
 import { agendarNotificacaoDiaria } from '../services/notificationService.js';
 
 export const criarMedicamento = async (dados) => {// ✨ CORREÇÃO AQUI: Mudamos 'userId' para 'user' para corresponder ao que o front-end envia.
-    const { user, nome, tipo, dose, horarioInicio, dataInicio, notificacaoDiaria, dias, frequencia, numeroDias } = dados;
+    const { userId, nome, tipo, dose, horarioInicio, dataInicio, notificacaoDiaria, dias, frequencia, numeroDias } = dados;
 
     const novoMedicamento = new Medicamento({
-        user, // Agora a referência ao usuário será salva corretamente.
+        userId, // Agora a referência ao usuário será salva corretamente.
         nome,
         tipo,
         dose,

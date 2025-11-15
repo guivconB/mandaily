@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mandaily/home/remedios/adicionar_remedio.dart';
 import 'package:mandaily/home/tela_consulta.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AdicionarConsulta extends StatefulWidget {
   const AdicionarConsulta({super.key});
@@ -37,7 +40,76 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
       ),
     );
   }
+  Future<void> _criarConsulta() async {
+    // Validação simples dos campos
+    if (_nomeConsultaController.text.isEmpty ||
+        _dataController.text.isEmpty ||
+        _horaController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Preencha os campos obrigatórios.')),
+      );
+      return;
+    }
 
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // Obter o ID do usuário salvo durante o login
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId');
+      if (userId == null) {
+        throw Exception("Usuário não logado. ID não encontrado.");
+      }
+
+      // Formatar data para o padrão ISO que o backend espera (YYYY-MM-DD)
+      final DateFormat inputFormat = DateFormat('dd/MM/yyyy');
+      final DateTime dateTime = inputFormat.parse(_dataController.text);
+      final String dataFormatada = dateTime.toIso8601String();
+
+      const String apiUrl = 'http://192.168.1.128:3000/consulta'; // ⬅️ SUBSTITUA PELO SEU IP!
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode({
+          'userId': userId,
+          'nomeConsulta': _nomeConsultaController.text,
+          'nomeProfissional': _nomeProfissionalController.text,
+          'endereco': _enderecoController.text,
+          'horario': _horaController.text,
+          'data': dataFormatada,
+        }),
+      );
+
+      Navigator.pop(context); // Fecha o loading
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Consulta adicionada com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Volta para a tela anterior
+        Navigator.pop(context);
+      } else {
+        final responseBody = jsonDecode(response.body);
+        throw Exception('Erro ao criar consulta: ${responseBody['error']}');
+      }
+    } catch (e) {
+      Navigator.pop(context); // Fecha o loading em caso de erro
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
   Future<void> _selectDate() async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -290,14 +362,7 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
             bottom: 40,
             right: 20,
             child: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Consulta adicionada com sucesso!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
+              onPressed: _criarConsulta,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF007AFF),
                 foregroundColor: Colors.black,

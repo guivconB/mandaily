@@ -48,11 +48,13 @@ class _LoginState extends State<Login> {
 
       if (response.statusCode == 200) {
         // Sucesso no Login!
-        // 1. Salvar o estado de login no dispositivo
+        final responseBody = jsonDecode(response.body);
+        final userId = responseBody['Usuario']['_id']; // <-- ✨ PEGA O ID DO USUÁRIO
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
+        await prefs.setString('userId', userId); // <-- ✨ SALVA O ID DO USUÁRIO
 
-        // 2. Navegar para a tela principal, removendo as telas anteriores da pilha
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const TelaConsulta()),

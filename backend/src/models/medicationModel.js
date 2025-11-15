@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const MedicationSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref:"User", required: true },
   nome: { type: String, required: true },
-  tipo: { type: String, enum ["Comprimido", "Líquido", "Pomada", "Gota", "Injeção"] required: true }, // comprimido, cápsula, etc.
+  tipo: { type: String, enum: ["Comprimido", "Líquido", "Pomada", "Gota", "Injeção"], required: true }, // comprimido, cápsula, etc.
   dose: { type: Number},
   horarioInicio: { type: String, required: true, match: [/^\d{2}:\d{2}$/, "Formato inválido. Use HH:MM (ex: 08:00)"] },
   dataInicio: { type: Date, required: true },

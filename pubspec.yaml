@@ -37,6 +37,9 @@ dependencies:
   google_fonts: ^6.2.1
   shared_preferences:
   http: ^1.2.1
+  firebase_messaging: ^16.0.4
+  firebase_auth: ^6.1.2
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

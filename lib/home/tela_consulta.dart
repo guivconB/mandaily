@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'package:mandaily/anotacoes.dart';
-import 'package:mandaily/home/remedios/adicionar_consulta.dart'; // Import da tela de adicionar
+import 'package:mandaily/home/remedios/adicionar_consulta.dart';
 import 'package:mandaily/home/remedios/tela_remedio.dart';
 import 'package:mandaily/calendar_screen.dart';
 import 'package:mandaily/perfil/perfil.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mandaily/splascreen.dart'; // Importante para o redirecionamento do Logout
 
-// [NOVO] 1. Classe de Modelo (Data Model)
-// Ajuda a organizar os dados recebidos da API de forma estruturada e segura.
+// --- MODELO DE DADOS ---
 class Consulta {
   final String id;
   final String nomeConsulta;
@@ -29,7 +30,6 @@ class Consulta {
     required this.data,
   });
 
-  // Factory constructor para criar uma instância de Consulta a partir de um JSON.
   factory Consulta.fromJson(Map<String, dynamic> json) {
     return Consulta(
       id: json['_id'],
@@ -37,12 +37,12 @@ class Consulta {
       nomeProfissional: json['nomeProfissional'],
       endereco: json['endereco'],
       horario: json['horario'],
-      // Converte a string de data (formato ISO 8601) do back-end para um objeto DateTime do Dart.
       data: DateTime.parse(json['data']),
     );
   }
 }
 
+// --- TELA PRINCIPAL ---
 class TelaConsulta extends StatefulWidget {
   const TelaConsulta({super.key});
 
@@ -55,9 +55,6 @@ class _TelaConsultaState extends State<TelaConsulta> {
 
   late DateTime _selectedDate;
   final List<DateTime> _diasDoMes = [];
-
-  // [NOVO] 2. Estado para a busca de dados
-  // O FutureBuilder usará esta variável para controlar o estado da UI (loading, erro, sucesso).
   late Future<List<Consulta>> _futureConsultas;
 
   @override
@@ -69,11 +66,82 @@ class _TelaConsultaState extends State<TelaConsulta> {
     for (int i = 0; i < 15; i++) {
       _diasDoMes.add(agora.add(Duration(days: i)));
     }
-    // Inicia a busca pelas consultas assim que a tela é construída.
     _futureConsultas = _buscarConsultasDoUsuario();
   }
+
+  // --- FUNÇÃO DE LOGOUT (NOVO) ---
+  Future<void> _fazerLogout() async {
+    // 1. Mostra confirmação
+    final bool? confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2C),
+        title: const Text('Sair', style: TextStyle(color: Colors.white)),
+        content: const Text('Deseja realmente sair da sua conta?', style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sair', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      // 2. Limpa o SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear(); // Remove login, token, userId, etc.
+
+      if (!mounted) return;
+
+      // 3. Redireciona para a Splash ou Login e remove o histórico de navegação
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const SplashScreen()),
+            (Route<dynamic> route) => false,
+      );
+    }
+  }
+
+  // --- BUSCAR CONSULTAS (API) ---
+  Future<List<Consulta>> _buscarConsultasDoUsuario() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId');
+    if (userId == null) return [];
+
+    // ❗ ATENÇÃO: Verifique seu IP
+    final String apiUrl = 'http://192.168.1.128:3000/consulta';
+
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> consultasJson = jsonDecode(response.body);
+
+        return consultasJson
+            .map((json) => Consulta.fromJson(json))
+            .where((consulta) {
+          bool isSameDay = consulta.data.year == _selectedDate.year &&
+              consulta.data.month == _selectedDate.month &&
+              consulta.data.day == _selectedDate.day;
+          // Filtrar por usuário se a API retornar todos
+          // bool pertenceAoUsuario = consulta.userId == userId;
+          return isSameDay;
+        }).toList();
+      } else {
+        throw Exception('Falha ao carregar as consultas.');
+      }
+    } catch (e) {
+      throw Exception('Erro de conexão: ${e.toString()}');
+    }
+  }
+
+  // --- DELETAR CONSULTA ---
   Future<void> _deletarConsulta(String consultaId) async {
-    // Mostra um diálogo de confirmação antes de deletar
     final bool? confirmar = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -84,41 +152,28 @@ class _TelaConsultaState extends State<TelaConsulta> {
           actions: <Widget>[
             TextButton(
               child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
-              onPressed: () {
-                Navigator.of(context).pop(false); // Retorna 'false'
-              },
+              onPressed: () => Navigator.of(context).pop(false),
             ),
             TextButton(
               child: const Text('Deletar', style: TextStyle(color: Colors.red)),
-              onPressed: () {
-                Navigator.of(context).pop(true); // Retorna 'true'
-              },
+              onPressed: () => Navigator.of(context).pop(true),
             ),
           ],
         );
       },
     );
 
-    // Se o usuário não confirmou (pressionou 'Cancelar' ou fora do diálogo), não faz nada.
-    if (confirmar != true) {
-      return;
-    }
+    if (confirmar != true) return;
 
-    // Se confirmou, prossegue com a exclusão
     try {
-      // ❗ ATENÇÃO: Verifique o IP!
+      // ❗ ATENÇÃO: Verifique seu IP
       final String apiUrl = 'http://192.168.1.128:3000/consulta/$consultaId';
-
       final response = await http.delete(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Consulta deletada com sucesso!'),
-            backgroundColor: Colors.green,
-          ),
+          const SnackBar(content: Text('Consulta deletada com sucesso!'), backgroundColor: Colors.green),
         );
-        // Atualiza a tela para remover o item deletado
         setState(() {
           _futureConsultas = _buscarConsultasDoUsuario();
         });
@@ -127,68 +182,14 @@ class _TelaConsultaState extends State<TelaConsulta> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text('Erro: ${e.toString()}'), backgroundColor: Colors.red),
       );
     }
   }
-  // [NOVO] 3. Função para buscar os dados na API
-  Future<List<Consulta>> _buscarConsultasDoUsuario() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId');
-    if (userId == null) {
-      // Se não encontrar o ID do usuário, retorna uma lista vazia para não quebrar o app.
-      return [];
-    }
 
-    // ❗ ATENÇÃO: Substitua pelo IP da sua máquina!
-    final String apiUrl = 'http://192.168.1.128:3000/consulta';
-
-    try {
-      final response = await http.get(Uri.parse(apiUrl));
-
-      if (response.statusCode == 200) {
-        // Decodifica a resposta JSON para uma lista dinâmica.
-        final List<dynamic> consultasJson = jsonDecode(response.body);
-
-        // Mapeia a lista JSON para uma lista de objetos Consulta e filtra pelo userId.
-        return consultasJson
-            .map((json) => Consulta.fromJson(json))
-            .where((consulta) {
-          // Compara a data da consulta com a data selecionada no calendário.
-          bool isSameDay = consulta.data.year == _selectedDate.year &&
-              consulta.data.month == _selectedDate.month &&
-              consulta.data.day == _selectedDate.day;
-
-          // Como a rota `/consulta` retorna todas as consultas, aqui filtramos manualmente
-          // apenas as que pertencem ao usuário logado (usando o userId).
-          // Em um app de produção, o ideal seria ter uma rota no back-end como `/consulta/user/:userId`
-          // que já faria esse filtro no servidor.
-          // (NOTA: Seu `appointmentModel` já tem `userId`, então o filtro é possível aqui.)
-          // A linha abaixo está comentada pois precisaria que a resposta da API incluísse o `userId`.
-          // bool pertenceAoUsuario = consulta.userId == userId;
-
-          return isSameDay; // && pertenceAoUsuario;
-        }).toList();
-
-      } else {
-        // Se o servidor responder com um erro, nós o lançamos para o FutureBuilder tratar.
-        throw Exception('Falha ao carregar as consultas.');
-      }
-    } catch (e) {
-      // Captura erros de conexão (ex: IP errado, servidor offline).
-      throw Exception('Erro de conexão: ${e.toString()}');
-    }
-  }
-
-  // [MODIFICADO] 4. Função para atualizar a lista ao mudar de data
   void _onDateSelected(DateTime newDate) {
     setState(() {
       _selectedDate = newDate;
-      // Quando o usuário seleciona uma nova data, reiniciamos a busca
-      // para carregar as consultas do novo dia.
       _futureConsultas = _buscarConsultasDoUsuario();
     });
   }
@@ -199,31 +200,45 @@ class _TelaConsultaState extends State<TelaConsulta> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
+      // --- DRAWER COM LOGOUT ---
       drawer: Drawer(
-        // ... (seu código do Drawer permanece igual) ...
         backgroundColor: const Color(0xFF1E1E1E),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Color(0xFF2C2C2E)),
-              child: Text('Menu', style: TextStyle(color: Colors.white, fontSize: 24)),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: <Widget>[
+                  const DrawerHeader(
+                    decoration: BoxDecoration(color: Color(0xFF2C2C2E)),
+                    child: Text('Menu', style: TextStyle(color: Colors.white, fontSize: 24)),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.home, color: Colors.white),
+                    title: const Text('Início', style: TextStyle(color: Colors.white)),
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.note, color: Colors.white),
+                    title: const Text('Anotações', style: TextStyle(color: Colors.white)),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AnotacoesPage())),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.person, color: Colors.white),
+                    title: const Text('Perfil', style: TextStyle(color: Colors.white)),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Perfil())),
+                  ),
+                ],
+              ),
             ),
+            // Botão de Sair fixo no final ou adicionado na lista
+            const Divider(color: Colors.grey),
             ListTile(
-              leading: const Icon(Icons.home, color: Colors.white),
-              title: const Text('Início', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.pop(context),
+              leading: const Icon(Icons.logout, color: Colors.redAccent),
+              title: const Text('Sair da conta', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+              onTap: _fazerLogout, // Chama a função de logout
             ),
-            ListTile(
-              leading: const Icon(Icons.note, color: Colors.white),
-              title: const Text('Anotações', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AnotacoesPage())),
-            ),
-            ListTile(
-              leading: const Icon(Icons.person, color: Colors.white),
-              title: const Text('Perfil', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Perfil())),
-            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -237,7 +252,6 @@ class _TelaConsultaState extends State<TelaConsulta> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                // ... (seu código do Header, Título e Data permanece igual) ...
                 const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -269,7 +283,6 @@ class _TelaConsultaState extends State<TelaConsulta> {
                       final dia = _diasDoMes[index];
                       final isSelected = dia.day == _selectedDate.day;
                       return GestureDetector(
-                        // [MODIFICADO] Chama a função que atualiza o estado e busca os novos dados
                         onTap: () => _onDateSelected(dia),
                         child: Container(
                           width: 55,
@@ -292,36 +305,29 @@ class _TelaConsultaState extends State<TelaConsulta> {
                     },
                   ),
                 ),
-                const SizedBox(height: 30), // Espaçamento antes da lista
+                const SizedBox(height: 30),
 
-                // [NOVO] 5. Widget que constrói a lista de consultas
+                // --- LISTA DE CONSULTAS ---
                 Expanded(
                   child: FutureBuilder<List<Consulta>>(
                     future: _futureConsultas,
                     builder: (context, snapshot) {
-                      // Estado de Carregamento
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
-                      }
-                      // Estado de Erro
-                      else if (snapshot.hasError) {
+                      } else if (snapshot.hasError) {
                         return Center(child: Text('Erro: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
-                      }
-                      // Estado de Sucesso, mas sem dados
-                      else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                         return const Center(
                           child: Text('Nenhuma consulta agendada para este dia.', style: TextStyle(color: Colors.white70, fontSize: 16)),
                         );
-                      }
-                      // Estado de Sucesso com dados
-                      else {
+                      } else {
                         final consultas = snapshot.data!;
                         return ListView.builder(
                           padding: EdgeInsets.zero,
                           itemCount: consultas.length,
                           itemBuilder: (context, index) {
                             final consulta = consultas[index];
-                            return _buildConsultaCard(consulta); // Chama um método que constrói o card
+                            return _buildConsultaCard(consulta);
                           },
                         );
                       }
@@ -333,17 +339,12 @@ class _TelaConsultaState extends State<TelaConsulta> {
           ),
         ),
       ),
-
-      // [MODIFICADO] 6. FloatingActionButton agora navega para AdicionarConsulta
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navega para a tela de adicionar e, quando voltar, atualiza a lista.
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AdicionarConsulta()),
           ).then((_) {
-            // Este .then() é executado quando a tela 'AdicionarConsulta' é fechada.
-            // Isso força a reconstrução da lista, exibindo o novo item adicionado.
             setState(() {
               _futureConsultas = _buscarConsultasDoUsuario();
             });
@@ -355,7 +356,6 @@ class _TelaConsultaState extends State<TelaConsulta> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
-        // ... (seu código do BottomAppBar permanece igual) ...
         color: const Color(0xFF2C2C2E),
         shape: const CircularNotchedRectangle(),
         notchMargin: 8.0,
@@ -390,41 +390,33 @@ class _TelaConsultaState extends State<TelaConsulta> {
     );
   }
 
-  // [NOVO] 7. Método para construir o Card da Consulta
-  // Isso organiza o código, deixando o `build` principal mais limpo.
+  // --- CARD DA CONSULTA ---
   Widget _buildConsultaCard(Consulta consulta) {
     return Stack(
       children: [
         Container(
-          width: double.infinity, // Garante que o container ocupe toda a largura
+          width: double.infinity,
           padding: const EdgeInsets.all(20),
           margin: const EdgeInsets.only(bottom: 15),
           decoration: BoxDecoration(
-            color: const Color(0xFF007AFF), // Cor azul, como no exemplo
+            color: const Color(0xFF007AFF),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ... (O conteúdo do seu card continua o mesmo)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Flexible( // Evita que o texto quebre o layout se for muito longo
+                  Flexible(
                     child: Text(
                       consulta.nomeConsulta,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold),
+                      style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
                     ),
                   ),
                   Text(
                     consulta.horario,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500),
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -442,20 +434,16 @@ class _TelaConsultaState extends State<TelaConsulta> {
                   consulta.endereco!,
                   style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
                 ),
-              const SizedBox(height: 10), // Espaço extra para o ícone não sobrepor o texto
+              const SizedBox(height: 10),
             ],
           ),
         ),
-        // ✨ BOTÃO DE DELETAR POSICIONADO
         Positioned(
           bottom: 20,
           right: 15,
           child: IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.white70, size: 28),
-            onPressed: () {
-              // Chama a função que criamos, passando o ID da consulta específica deste card
-              _deletarConsulta(consulta.id);
-            },
+            onPressed: () => _deletarConsulta(consulta.id),
           ),
         ),
       ],

@@ -9,6 +9,7 @@ import 'package:mandaily/perfil/perfil.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mandaily/splascreen.dart';
 
 // 1. Classe de Modelo (Data Model) para o Remédio
 class Medicamento {
@@ -70,7 +71,43 @@ class _TelaRemedioState extends State<TelaRemedio> {
     // Inicia a busca assim que a tela é construída
     _futureMedicamentos = _buscarMedicamentosDoUsuario();
   }
+  // --- FUNÇÃO DE LOGOUT (NOVO) ---
+  Future<void> _fazerLogout() async {
+    // 1. Mostra confirmação
+    final bool? confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2C),
+        title: const Text('Sair', style: TextStyle(color: Colors.white)),
+        content: const Text('Deseja realmente sair da sua conta?', style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sair', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
 
+    if (confirmar == true) {
+      // 2. Limpa o SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear(); // Remove login, token, userId, etc.
+
+      if (!mounted) return;
+
+      // 3. Redireciona para a Splash ou Login e remove o histórico de navegação
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const SplashScreen()),
+            (Route<dynamic> route) => false,
+      );
+    }
+  }
   // 3. Função para buscar os dados na API
   Future<List<Medicamento>> _buscarMedicamentosDoUsuario() async {
     final prefs = await SharedPreferences.getInstance();
@@ -130,28 +167,42 @@ class _TelaRemedioState extends State<TelaRemedio> {
       key: _scaffoldKey,
       drawer: Drawer(
         backgroundColor: const Color(0xFF1E1E1E),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Color(0xFF2C2C2E)),
-              child: Text('Menu', style: TextStyle(color: Colors.white, fontSize: 24)),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: <Widget>[
+                  const DrawerHeader(
+                    decoration: BoxDecoration(color: Color(0xFF2C2C2E)),
+                    child: Text('Menu', style: TextStyle(color: Colors.white, fontSize: 24)),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.home, color: Colors.white),
+                    title: const Text('Início', style: TextStyle(color: Colors.white)),
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.note, color: Colors.white),
+                    title: const Text('Anotações', style: TextStyle(color: Colors.white)),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AnotacoesPage())),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.person, color: Colors.white),
+                    title: const Text('Perfil', style: TextStyle(color: Colors.white)),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Perfil())),
+                  ),
+                ],
+              ),
             ),
+            // Botão de Sair fixo no final ou adicionado na lista
+            const Divider(color: Colors.grey),
             ListTile(
-              leading: const Icon(Icons.home, color: Colors.white),
-              title: const Text('Início', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.pop(context),
+              leading: const Icon(Icons.logout, color: Colors.redAccent),
+              title: const Text('Sair da conta', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+              onTap: _fazerLogout, // Chama a função de logout
             ),
-            ListTile(
-              leading: const Icon(Icons.note, color: Colors.white),
-              title: const Text('Anotações', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AnotacoesPage())),
-            ),
-            ListTile(
-              leading: const Icon(Icons.person, color: Colors.white),
-              title: const Text('Perfil', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Perfil())),
-            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

@@ -22,8 +22,9 @@ export const criarConsulta = async (dados) => {
 };
 
 // Listar todas as consultas
-export const listarConsultas = async () => {
-  const consultas = await Consulta.find();
+export const listarConsultasPorUsuario = async (userId) => {
+  // O filtro { userId: userId } garante que só venha dados daquele usuário
+  const consultas = await Consulta.find({ userId: userId });
   return consultas;
 };
 

@@ -361,18 +361,32 @@ class _AdicionarRemedioState extends State<AdicionarRemedio> {
                           ],
                         ),
                         const SizedBox(height: 20),
-
-                        // Frequência
                         const Text('Frequência', style: TextStyle(color: Colors.white, fontFamily: 'Coolvetica', fontSize: 23)),
                         DropdownButtonFormField<String>(
-                          value: _frequenciaSelecionada,
-                          decoration: _inputDecoration(''),
+                          value: _diasSelecionado, // Variável já existente no seu código
                           dropdownColor: const Color(0xFF2C2C2C),
-                          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                          items: ['4 horas', '6 horas', '8 horas', '12 horas', '24 horas']
-                              .map((v) => DropdownMenuItem(value: v, child: Text(v, style: const TextStyle(color: Colors.white, fontFamily: 'Coolvetica'))))
+                          decoration: _inputDecoration(''),
+                          items: ["Diariamente", "Dias alternados", "Semanalmente", "Uma vez"]
+                              .map((label) => DropdownMenuItem(
+                            value: label,
+                            child: Text(label, style: const TextStyle(color: Colors.white)),
+                          ))
                               .toList(),
-                          onChanged: (v) => setState(() => _frequenciaSelecionada = v),
+                          onChanged: (value) => setState(() => _diasSelecionado = value),
+                        ),
+
+                        const SizedBox(height: 20),
+                        const Text('Duração (dias)', style: TextStyle(color: Colors.white, fontFamily: 'Coolvetica', fontSize: 23)),
+                        TextFormField(
+                          initialValue: '1',
+                          keyboardType: TextInputType.number,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: _inputDecoration('Quantos dias?'),
+                          onChanged: (value) {
+                            setState(() {
+                              _numeroDias = int.tryParse(value) ?? 1;
+                            });
+                          },
                         ),
                         const SizedBox(height: 40),
 

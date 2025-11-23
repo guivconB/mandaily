@@ -113,8 +113,7 @@ class _TelaConsultaState extends State<TelaConsulta> {
     final userId = prefs.getString('userId');
     if (userId == null) return [];
 
-    // ❗ ATENÇÃO: Verifique seu IP
-    final String apiUrl = 'http://192.168.1.128:3000/consulta';
+    final String apiUrl = 'http://192.168.1.128:3000/consultas/user/$userId';
 
     try {
       final response = await http.get(Uri.parse(apiUrl));

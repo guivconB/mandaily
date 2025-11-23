@@ -1,5 +1,4 @@
-import { criarConsulta, listarConsultas, buscarConsultaPorId, atualizarConsulta, deletarConsulta } from "../services/appointmentService.js";
-
+import { criarConsulta, listarConsultasPorUsuario, buscarConsultaPorId, atualizarConsulta, deletarConsulta } from "../services/appointmentService.js";
 // Criar nova consulta
 export const criarConsultaController = async (req, res) => {
   try {
@@ -14,9 +13,10 @@ export const criarConsultaController = async (req, res) => {
 };
 
 // Listar todas as consultas
-export const listarConsultasController = async (req, res) => {
+export const listarConsultasPorUsuarioController = async (req, res) => {
   try {
-    const consultas = await listarConsultas();
+    const { userId } = req.params; // Pega o ID que virá na URL
+    const consultas = await listarConsultasPorUsuario(userId);
     return res.status(200).json(consultas);
   } catch (error) {
     return res.status(500).json({ error: error.message });

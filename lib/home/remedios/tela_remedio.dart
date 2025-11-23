@@ -19,7 +19,9 @@ class Medicamento {
   final int? dose;
   final String horarioInicio;
   final DateTime dataInicio;
-  // Adicione outros campos se precisar exibi-los
+  // NOVOS CAMPOS NECESSÁRIOS
+  final String dias; // "Diariamente", "Semanalmente", etc.
+  final int numeroDias; // Duração do tratamento
 
   Medicamento({
     required this.id,
@@ -28,6 +30,8 @@ class Medicamento {
     this.dose,
     required this.horarioInicio,
     required this.dataInicio,
+    required this.dias,
+    required this.numeroDias,
   });
 
   factory Medicamento.fromJson(Map<String, dynamic> json) {
@@ -38,6 +42,9 @@ class Medicamento {
       dose: json['dose'],
       horarioInicio: json['horarioInicio'],
       dataInicio: DateTime.parse(json['dataInicio']),
+      // Mapeando os novos campos (com valores padrão para evitar crash em dados antigos)
+      dias: json['dias'] ?? 'Diariamente',
+      numeroDias: json['numeroDias'] ?? 1,
     );
   }
 }
@@ -109,15 +116,17 @@ class _TelaRemedioState extends State<TelaRemedio> {
     }
   }
   // 3. Função para buscar os dados na API
+  // 3. Função para buscar os dados na API
   Future<List<Medicamento>> _buscarMedicamentosDoUsuario() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString('userId');
+
+    // Se não tiver usuário logado, retorna lista vazia imediatamente
     if (userId == null) {
-      return []; // Retorna lista vazia se não houver usuário logado
+      return [];
     }
 
-    // ❗ ATENÇÃO: Substitua pelo IP da sua máquina!
-    final String apiUrl = 'http://192.168.1.128:3000/medicamentos';
+    final String apiUrl = 'http://192.168.1.128:3000/medicamentos/user/$userId';
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
@@ -125,31 +134,64 @@ class _TelaRemedioState extends State<TelaRemedio> {
       if (response.statusCode == 200) {
         final List<dynamic> medicamentosJson = jsonDecode(response.body);
 
-        // Mapeia o JSON para objetos Medicamento e filtra pela data selecionada
         return medicamentosJson
             .map((json) => Medicamento.fromJson(json))
             .where((medicamento) {
-          // Lógica de filtro: mostrar se a data selecionada está dentro do período de tratamento
-          final dataInicio = medicamento.dataInicio;
-          // NOTA: A lógica de "numeroDias" precisaria ser implementada aqui se fosse complexa.
-          // Por simplicidade, vamos mostrar todos os remédios agendados para a data selecionada ou antes dela.
-          // O ideal seria filtrar pelo 'userId' também.
-          bool isSameDay = medicamento.dataInicio.year == _selectedDate.year &&
-              medicamento.dataInicio.month == _selectedDate.month &&
-              medicamento.dataInicio.day == _selectedDate.day;
 
-          // Em um app real, o backend deveria ter uma rota /medicamentos/user/:userId
-          // bool pertenceAoUsuario = json['userId'] == userId;
+          // 1. Normalizar as datas para comparar apenas Ano/Mês/Dia
+          final dataInicioTratamento = DateTime(
+              medicamento.dataInicio.year,
+              medicamento.dataInicio.month,
+              medicamento.dataInicio.day
+          );
 
-          return isSameDay; // && pertenceAoUsuario;
+          final dataSelecionada = DateTime(
+              _selectedDate.year,
+              _selectedDate.month,
+              _selectedDate.day
+          );
+
+          // 2. Calcular a data final do tratamento
+          final dataFimTratamento = dataInicioTratamento.add(Duration(days: medicamento.numeroDias - 1));
+
+          // 3. Verifica se o dia selecionado está DENTRO do período de tratamento
+          // Usamos subtract/add(Duration(days:1)) para garantir inclusão das bordas (>= e <=)
+          bool estaNoPeriodo = dataSelecionada.isAfter(dataInicioTratamento.subtract(const Duration(days: 1))) &&
+              dataSelecionada.isBefore(dataFimTratamento.add(const Duration(days: 1)));
+
+          if (!estaNoPeriodo) {
+            return false;
+          }
+
+          // 4. Lógica Específica da Frequência
+          if (medicamento.dias == 'Diariamente') {
+            return true;
+          }
+          else if (medicamento.dias == 'Dias alternados') {
+            final diferencaDias = dataSelecionada.difference(dataInicioTratamento).inDays;
+            return diferencaDias % 2 == 0;
+          }
+          else if (medicamento.dias == 'Semanalmente') {
+            final diferencaDias = dataSelecionada.difference(dataInicioTratamento).inDays;
+            return diferencaDias % 7 == 0;
+          }
+          else if (medicamento.dias == 'Uma vez') {
+            return dataSelecionada.isAtSameMomentAs(dataInicioTratamento);
+          }
+
+          return true;
         }).toList();
+
       } else {
-        throw Exception('Falha ao carregar os medicamentos.');
+        // CORREÇÃO AQUI: Se não for 200, lançamos um erro para não retornar nulo implicitamente
+        throw Exception('Falha ao carregar medicamentos. Status Code: ${response.statusCode}');
       }
     } catch (e) {
+      // CORREÇÃO: O catch já relança a exceção, garantindo que a função não termine sem retorno
       throw Exception('Erro de conexão: ${e.toString()}');
     }
   }
+
 
   // 4. Função para atualizar a lista ao mudar de data
   void _onDateSelected(DateTime newDate) {

@@ -1,5 +1,4 @@
-import { criarMedicamento, listarMedicamentos , listarMedicamentoPorId, atualizarMedicamento, deletarMedicamento } from '../services/medicationService.js'; 
-
+import { criarMedicamento, listarMedicamentosPorUsuario, listarMedicamentoPorId, atualizarMedicamento, deletarMedicamento } from '../services/medicationService.js';
 // Criar medicamento
 export const novoMedicamentoController = async (req, res) => {
   try {
@@ -13,9 +12,10 @@ export const novoMedicamentoController = async (req, res) => {
 
 
 // Listar todos medicamentos
-export const listarMedicamentosController = async (req, res) => {
+export const listarMedicamentosPorUsuarioController = async (req, res) => {
 	try {
-		const Medicamentos = await listarMedicamentos();
+        const { userId } = req.params;
+		const Medicamentos = await listarMedicamentosPorUsuario(userId);
 		res.json(Medicamentos);
 	} catch (error) {
 		res.status(500).json({ error: error.message });

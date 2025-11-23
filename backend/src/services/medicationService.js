@@ -26,8 +26,8 @@ export const criarMedicamento = async (dados) => {// ✨ CORREÇÃO AQUI: Mudamo
 };
 
 // Listar todos medicamentos
-export const listarMedicamentos = async () => {
-    const medicamentos = await Medicamento.find();
+export const listarMedicamentosPorUsuario = async (userId) => {
+    const medicamentos = await Medicamento.find({ userId: userId });
     return medicamentos;
 };
 

@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class Login extends StatefulWidget {
   const Login({super.key});
 
@@ -31,15 +30,15 @@ class _LoginState extends State<Login> {
       builder: (BuildContext context) => const Center(child: CircularProgressIndicator()),
     );
 
-    // ❗ MUITO IMPORTANTE: Use o IP da sua máquina, não localhost.
-    const String apiUrl = 'http://192.168.1.128:3000/login'; // ⬅️ SUBSTITUA PELO SEU IP!
+    // ❗ MUITO IMPORTANTE: Use o IP da sua máquina.
+    const String apiUrl = 'http://192.168.1.128:3000/login';
 
     try {
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode(<String, String>{
-          'email': _emailController.text.trim(), // .trim() remove espaços em branco
+          'email': _emailController.text.trim(),
           'senha': _senhaController.text.trim(),
         }),
       );
@@ -49,17 +48,43 @@ class _LoginState extends State<Login> {
       if (response.statusCode == 200) {
         // Sucesso no Login!
         final responseBody = jsonDecode(response.body);
-        final userId = responseBody['Usuario']['_id']; // <-- ✨ PEGA O ID DO USUÁRIO
+        print("DEBUG: Resposta do Login: $responseBody"); // VEJA ISSO NO CONSOLE
 
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isLoggedIn', true);
-        await prefs.setString('userId', userId); // <-- ✨ SALVA O ID DO USUÁRIO
+        // Acessa o objeto Usuario
+        final usuarioData = responseBody['Usuario'];
 
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const TelaConsulta()),
-              (Route<dynamic> route) => false,
-        );
+        if (usuarioData != null) {
+          final userId = usuarioData['_id'].toString();
+          final userName = usuarioData['nome']?.toString(); // O ? evita crash se for null
+          final userNascimento = usuarioData['dataNascimento']?.toString();
+
+          print("DEBUG: Tentando salvar -> ID: $userId, Nome: $userName, Nasc: $userNascimento");
+
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('isLoggedIn', true);
+          await prefs.setString('userId', userId);
+
+          if (userName != null) {
+            await prefs.setString('userName', userName);
+          }
+          if (userNascimento != null) {
+            await prefs.setString('userNascimento', userNascimento);
+          }
+
+          print("DEBUG: Dados salvos no SharedPreferences com sucesso!");
+        } else {
+          print("DEBUG: ERRO - Objeto 'Usuario' veio nulo do backend");
+        }
+
+        // Navega apenas DEPOIS de salvar tudo
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const TelaConsulta()),
+                (Route<dynamic> route) => false,
+          );
+        }
+
       } else {
         // Erro (e-mail/senha incorretos ou outro problema)
         final responseBody = jsonDecode(response.body);
@@ -68,7 +93,7 @@ class _LoginState extends State<Login> {
         );
       }
     } catch (e) {
-      Navigator.pop(context); // Garante que o loading feche em caso de erro de conexão
+      Navigator.pop(context); // Garante que o loading feche em caso de erro
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro de conexão com o servidor: $e')),
       );
@@ -77,7 +102,7 @@ class _LoginState extends State<Login> {
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
-  // função pra padronizar o estilo dos textfields
+
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
@@ -134,8 +159,6 @@ class _LoginState extends State<Login> {
                       letterSpacing: -3,
                     ),
                   ),
-
-                  // subtítulo
                   Text(
                     'Entre com a sua conta',
                     style: TextStyle(
@@ -150,7 +173,6 @@ class _LoginState extends State<Login> {
 
             const SizedBox(height: 90),
 
-            // campo email
             const Text(
               'Endereço de E-mail',
               style: TextStyle(
@@ -161,11 +183,10 @@ class _LoginState extends State<Login> {
             ),
             const SizedBox(height: 10),
             TextField(
-              controller: _emailController, // Adicione esta linha
+              controller: _emailController,
               decoration: _inputDecoration('...'),
-              keyboardType: TextInputType.emailAddress, // Melhora a usabilidade
+              keyboardType: TextInputType.emailAddress,
             ),
-
 
             const SizedBox(height: 16),
 
@@ -179,7 +200,7 @@ class _LoginState extends State<Login> {
             ),
             const SizedBox(height: 10),
             TextField(
-              controller: _senhaController, // Adicione esta linha
+              controller: _senhaController,
               obscureText: true,
               decoration: _inputDecoration('••••••••'),
             ),
@@ -210,7 +231,7 @@ class _LoginState extends State<Login> {
 
             Center(
               child: SizedBox(
-                width: 280, // a largura
+                width: 280,
                 child: ElevatedButton(
                   onPressed: _fazerLogin,
                   onLongPress: () {
@@ -240,7 +261,6 @@ class _LoginState extends State<Login> {
 
             const SizedBox(height: 20),
 
-            // texto "não possui uma conta?"
             Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -267,23 +287,15 @@ class _LoginState extends State<Login> {
                         fontFamily: 'Coolvetica',
                         fontSize: 18,
                         decoration: TextDecoration.underline,
-
                       ),
-
                     ),
                   ),
                 ],
               ),
             ),
-
-
-
           ],
-
         ),
-
       ),
-
     );
   }
 }
